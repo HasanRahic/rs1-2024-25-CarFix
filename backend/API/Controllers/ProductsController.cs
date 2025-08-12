@@ -2,7 +2,6 @@ using System;
 using Core.Entities;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
@@ -24,12 +23,12 @@ public class ProductsController : ControllerBase
         return await context.Products.ToListAsync();
     }
 
-    [HttpGet("{id:int}")] //api/product/2
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
         var product = await context.Products.FindAsync(id);
 
-        if(product == null) return NotFound();
+        if (product == null) return NotFound();
 
         return product;
     }
@@ -47,7 +46,8 @@ public class ProductsController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateProduct(int id, Product product)
     {
-        if(product.Id != id || !ProductExists(id)) return BadRequest("Cannot update this product");
+        if (product.Id != id || !ProductExists(id))
+            return BadRequest("Cannot update this product");
 
         context.Entry(product).State = EntityState.Modified;
 
@@ -61,10 +61,10 @@ public class ProductsController : ControllerBase
     {
         var product = await context.Products.FindAsync(id);
 
-        if(product == null) return NotFound();
+        if (product == null) return NotFound();
 
         context.Products.Remove(product);
-        
+
         await context.SaveChangesAsync();
 
         return NoContent();
