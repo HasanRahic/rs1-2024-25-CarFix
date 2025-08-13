@@ -1,0 +1,191 @@
+[
+  {
+    "Name": "Brake Pads - Front Set",
+    "Description": "High-performance front brake pads compatible with most sedan models.",
+    "Price": 45.99,
+    "PictureUrl": "images/products/brake-pads-front.jpg",
+    "Type": "Brakes",
+    "Brand": "Bosch",
+    "QuantityInStock": 50
+  },
+  {
+    "Name": "Oil Filter",
+    "Description": "Premium oil filter for optimal engine performance and protection.",
+    "Price": 9.50,
+    "PictureUrl": "images/products/oil-filter.jpg",
+    "Type": "Engine",
+    "Brand": "Mann",
+    "QuantityInStock": 150
+  },
+  {
+    "Name": "Air Filter",
+    "Description": "High-flow air filter for improved fuel efficiency.",
+    "Price": 14.75,
+    "PictureUrl": "images/products/air-filter.jpg",
+    "Type": "Engine",
+    "Brand": "K&N",
+    "QuantityInStock": 120
+  },
+  {
+    "Name": "Spark Plug Set (4 pcs)",
+    "Description": "Set of 4 platinum spark plugs for long-lasting performance.",
+    "Price": 25.00,
+    "PictureUrl": "images/products/spark-plugs.jpg",
+    "Type": "Ignition",
+    "Brand": "NGK",
+    "QuantityInStock": 200
+  },
+  {
+    "Name": "Car Battery 12V 60Ah",
+    "Description": "Maintenance-free car battery with high cold cranking amps.",
+    "Price": 95.00,
+    "PictureUrl": "images/products/car-battery.jpg",
+    "Type": "Electrical",
+    "Brand": "Varta",
+    "QuantityInStock": 40
+  },
+  {
+    "Name": "Front Wiper Blades (Set of 2)",
+    "Description": "All-season windshield wipers with enhanced rubber technology.",
+    "Price": 18.99,
+    "PictureUrl": "images/products/wiper-blades.jpg",
+    "Type": "Accessories",
+    "Brand": "Bosch",
+    "QuantityInStock": 80
+  },
+  {
+    "Name": "Engine Oil 5W-30 (5L)",
+    "Description": "Fully synthetic engine oil for gasoline and diesel engines.",
+    "Price": 39.99,
+    "PictureUrl": "images/products/engine-oil.jpg",
+    "Type": "Engine",
+    "Brand": "Castrol",
+    "QuantityInStock": 100
+  },
+  {
+    "Name": "Rear Shock Absorbers (Pair)",
+    "Description": "Heavy-duty rear shock absorbers for smooth ride comfort.",
+    "Price": 120.00,
+    "PictureUrl": "images/products/shock-absorbers.jpg",
+    "Type": "Suspension",
+    "Brand": "Monroe",
+    "QuantityInStock": 35
+  },
+  {
+    "Name": "Clutch Kit",
+    "Description": "Complete clutch kit with pressure plate, disc, and bearing.",
+    "Price": 210.00,
+    "PictureUrl": "images/products/clutch-kit.jpg",
+    "Type": "Transmission",
+    "Brand": "Sachs",
+    "QuantityInStock": 25
+  },
+  {
+    "Name": "Radiator Coolant (4L)",
+    "Description": "Long-life radiator coolant for effective heat dissipation.",
+    "Price": 12.50,
+    "PictureUrl": "images/products/coolant.jpg",
+    "Type": "Cooling",
+    "Brand": "Prestone",
+    "QuantityInStock": 90
+  },
+  {
+    "Name": "Timing Belt Kit",
+    "Description": "Complete timing belt kit with tensioner and pulleys.",
+    "Price": 145.00,
+    "PictureUrl": "images/products/timing-belt-kit.jpg",
+    "Type": "Engine",
+    "Brand": "Gates",
+    "QuantityInStock": 30
+  },
+  {
+    "Name": "Fuel Pump",
+    "Description": "Electric fuel pump for gasoline engines with high efficiency.",
+    "Price": 85.00,
+    "PictureUrl": "images/products/fuel-pump.jpg",
+    "Type": "Fuel System",
+    "Brand": "Delphi",
+    "QuantityInStock": 45
+  },
+  {
+    "Name": "Alternator",
+    "Description": "High-output alternator for consistent electrical performance.",
+    "Price": 160.00,
+    "PictureUrl": "images/products/alternator.jpg",
+    "Type": "Electrical",
+    "Brand": "Bosch",
+    "QuantityInStock": 20
+  },
+  {
+    "Name": "Turbocharger",
+    "Description": "Performance turbocharger for increased horsepower.",
+    "Price": 750.00,
+    "PictureUrl": "images/products/turbocharger.jpg",
+    "Type": "Engine",
+    "Brand": "Garrett",
+    "QuantityInStock": 10
+  },
+  {
+    "Name": "Headlight Assembly",
+    "Description": "LED headlight assembly for clear visibility and modern look.",
+    "Price": 320.00,
+    "PictureUrl": "images/products/headlight-assembly.jpg",
+    "Type": "Lighting",
+    "Brand": "Philips",
+    "QuantityInStock": 15
+  },
+  {
+    "Name": "Tail Light Assembly",
+    "Description": "OEM tail light assembly for safety and style.",
+    "Price": 140.00,
+    "PictureUrl": "images/products/tail-light.jpg",
+    "Type": "Lighting",
+    "Brand": "Hella",
+    "QuantityInStock": 18
+  },
+  {
+    "Name": "Exhaust Muffler",
+    "Description": "Stainless steel exhaust muffler for durability and performance.",
+    "Price": 180.00,
+    "PictureUrl": "images/products/exhaust-muffler.jpg",
+    "Type": "Exhaust",
+    "Brand": "MagnaFlow",
+    "QuantityInStock": 12
+  },
+  {
+    "Name": "Windshield Washer Pump",
+    "Description": "High-quality washer pump for clean and clear windshield.",
+    "Price": 25.00,
+    "PictureUrl": "images/products/washer-pump.jpg",
+    "Type": "Accessories",
+    "Brand": "Valeo",
+    "QuantityInStock": 60
+  },
+  {
+    "Name": "Drive Belt",
+    "Description": "Serpentine drive belt for smooth engine accessory operation.",
+    "Price": 35.00,
+    "PictureUrl": "images/products/drive-belt.jpg",
+    "Type": "Engine",
+    "Brand": "Dayco",
+    "QuantityInStock": 55
+  },
+  {
+    "Name": "Radiator",
+    "Description": "Aluminum radiator for efficient engine cooling.",
+    "Price": 220.00,
+    "PictureUrl": "images/products/radiator.jpg",
+    "Type": "Cooling",
+    "Brand": "Denso",
+    "QuantityInStock": 22
+  },
+  {
+    "Name": "Wheel Bearing Kit",
+    "Description": "Complete front wheel bearing kit for smooth wheel rotation.",
+    "Price": 70.00,
+    "PictureUrl": "images/products/wheel-bearing.jpg",
+    "Type": "Suspension",
+    "Brand": "SKF",
+    "QuantityInStock": 50
+  }
+]
