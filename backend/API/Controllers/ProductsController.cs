@@ -10,7 +10,7 @@ namespace API.Controllers;
 public class ProductsController(IGenericRepository<Product> repo) : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts([FromQuery]ProductSpecParams specParams)
+    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts([FromQuery] ProductSpecParams specParams)
     {
         var spec = new ProductSpecification(specParams);
 
@@ -88,6 +88,27 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
         var spec = new TypeListSpecification();
 
         return Ok(await repo.ListAsync(spec));
+    }
+
+    [HttpPost("upload")]
+    public async Task<ActionResult<string>> UploadImage(IFormFile file)
+    {
+        if (file == null || file.Length == 0) return BadRequest("No file uploaded");
+
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
+        if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+
+        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var url = $"https://localhost:5001/images/{fileName}";
+        return Ok(url);
     }
 
     private bool ProductExists(int id)
