@@ -32,24 +32,37 @@ export class ProductService {
     return this.http.get<Product>(this.baseUrl + 'products/' + id);
   }
 
-  createProduct(product: Product): Observable<Product> {
-    return this.http.post<Product>(this.baseUrl + 'products', product);
+  createProduct(product: any, file?: File) {
+    const formData = new FormData();
+    formData.append('Name', product.name);
+    formData.append('Description', product.description);
+    formData.append('Price', product.price?.toString() ?? '0');
+    formData.append('Brand', product.brand);
+    formData.append('Type', product.type);
+    formData.append(
+      'QuantityInStock',
+      product.quantityInStock?.toString() ?? '0'
+    );
+
+    if (file) {
+      formData.append('ImageFile', file, file.name);
+    }
+
+    return this.http.post(this.baseUrl + 'products', formData);
   }
 
-  updateProduct(product: Product): Observable<void> {
-    return this.http.put<void>(
-      this.baseUrl + 'products/' + product.id,
-      product
-    );
+  updateProduct(id: number, product: any) {
+    // klasični JSON PUT
+    return this.http.put(this.baseUrl + 'products/' + id, product);
+  }
+
+  updateProductImage(id: number, file: File) {
+    const formData = new FormData();
+    formData.append('ImageFile', file, file.name); // ključ mora biti "ImageFile"
+    return this.http.put(this.baseUrl + 'products/' + id + '/image', formData);
   }
 
   deleteProduct(id: number): Observable<void> {
     return this.http.delete<void>(this.baseUrl + 'products/' + id);
-  }
-
-  uploadImage(file: FormData) {
-    return this.http.post(this.baseUrl + 'products/upload', file, {
-      responseType: 'text',
-    });
   }
 }

@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Product } from '../../../shared/models/product';
 import { ProductService } from '../../../core/services/product.service';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Pagination } from '../../../shared/models/pagination';
 
 @Component({
@@ -14,6 +14,7 @@ import { Pagination } from '../../../shared/models/pagination';
 export class ProductListComponent implements OnInit {
   products: Product[] = [];
   private productService = inject(ProductService);
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   currentPage = 1;
@@ -32,7 +33,17 @@ export class ProductListComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.loadProducts();
+    this.route.queryParams.subscribe((params) => {
+      this.currentPage = +params['currentPage'] || 1;
+      this.itemsPerPage = +params['itemsPerPage'] || 6;
+      this.loadProducts();
+
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true,
+      });
+    });
   }
 
   loadProducts() {
@@ -113,7 +124,12 @@ export class ProductListComponent implements OnInit {
   }
 
   editProduct(productId: number) {
-    this.router.navigate(['/products/edit', productId]);
+    this.router.navigate(['/products/edit', productId], {
+      queryParams: {
+        currentPage: this.currentPage,
+        itemsPerPage: this.itemsPerPage,
+      },
+    });
   }
 
   deleteProduct(id: number) {

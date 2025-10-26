@@ -1,7 +1,9 @@
 using API.Middleware;
 using Core.Entities;
 using Core.Interfaces;
+using Core.Settings;
 using Infrastructure.Data;
+using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
@@ -21,6 +23,18 @@ builder.Services.AddCors();
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<StoreContext>();
+
+
+// 1️⃣ Registracija Cloudinary Settings iz appsettings
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+
+// 2️⃣ Registracija CloudinaryService
+builder.Services.AddScoped<CloudinaryService>();
+
+
+
+
 
 var app = builder.Build();
 

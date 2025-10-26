@@ -23,6 +23,8 @@ export class ProductFormComponent implements OnInit {
   selectedFile?: File;
   previewUrl?: string;
   product?: Product;
+  currentPage?: number;
+  itemsPerPage?: number;
 
   private fb = inject(FormBuilder);
   private productService = inject(ProductService);
@@ -31,6 +33,8 @@ export class ProductFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.productId = this.route.snapshot.params['id'];
+    this.currentPage = +this.route.snapshot.queryParams['currentPage'] || 1;
+    this.itemsPerPage = +this.route.snapshot.queryParams['itemsPerPage'] || 6;
     this.isEditMode = !!this.productId;
 
     this.initializeForm();
@@ -69,11 +73,19 @@ export class ProductFormComponent implements OnInit {
     this.productService.getProduct(id).subscribe({
       next: (product: Product) => {
         this.product = product;
-        this.productForm.patchValue(product);
+        this.productForm.patchValue({
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          brand: product.brand,
+          type: product.type,
+          quantityInStock: product.quantityInStock,
+        });
 
         if (product.pictureUrl) {
-          if (product.pictureUrl.startsWith('/')) {
-            this.previewUrl = 'https://localhost:5001' + product.pictureUrl;
+          if (product.pictureUrl.startsWith('/images')) {
+            this.previewUrl =
+              'https://res.cloudinary.com/dgr65fixz/image/upload/v1761391917/products/u0etewaxj3sdckqfrczj.jpg';
           } else {
             this.previewUrl = product.pictureUrl;
           }
@@ -86,61 +98,56 @@ export class ProductFormComponent implements OnInit {
     });
   }
 
-  async onSubmit() {
-    if (this.productForm.valid) {
-      try {
-        let pictureUrl = this.productForm.value.pictureUrl;
+  onSubmit() {
+    if (!this.productForm.valid) {
+      alert('Popuni sva polja!');
+      return;
+    }
 
-        if (this.selectedFile) {
-          const formData = new FormData();
-          formData.append('file', this.selectedFile);
-          pictureUrl = await this.productService
-            .uploadImage(formData)
-            .toPromise();
-          console.log('Uploaded image URL:', pictureUrl);
-        }
+    const product = this.productForm.value;
 
-        const productData = { ...this.productForm.value, pictureUrl };
-        console.log('Product data to create:', productData);
-
-        if (this.isEditMode && this.product) {
-          const updatedProduct: Product = {
-            ...this.product,
-            ...productData,
-            id: this.product.id,
-          };
-
-          this.productService.updateProduct(updatedProduct).subscribe({
-            next: () => {
-              console.log('Product updated successfully');
-              this.router.navigate(['/products']);
-            },
-            error: (error) => {
-              console.error('Error updating product:', error);
-            },
-          });
-        } else {
-          this.productService.createProduct(productData).subscribe({
-            next: (response) => {
-              console.log('Product created successfully:', response);
-              this.router.navigate(['/products']);
-            },
-            error: (error) => {
-              console.error('Error creating product:', error);
-            },
-          });
-        }
-      } catch (err) {
-        console.error('Error uploading or saving product:', err);
-      }
+    if (this.isEditMode && this.productId) {
+      this.productService.updateProduct(this.productId!, product).subscribe({
+        next: () => {
+          if (this.selectedFile) {
+            this.productService
+              .updateProductImage(this.productId!, this.selectedFile!)
+              .subscribe({
+                next: () =>
+                  this.router.navigate(['/products'], {
+                    queryParams: {
+                      currentPage: this.currentPage,
+                      itemsPerPage: this.itemsPerPage,
+                    },
+                    skipLocationChange: true,
+                  }),
+                error: (err) =>
+                  console.error('Greška prilikom ažuriranja slike:', err),
+              });
+          } else {
+            this.router.navigate(['/products'], {
+              queryParams: {
+                currentPage: this.currentPage,
+                itemsPerPage: this.itemsPerPage,
+              },
+              skipLocationChange: true,
+            });
+          }
+        },
+        error: (err) =>
+          console.error('Greška prilikom ažuriranja podataka:', err),
+      });
     } else {
-      console.log('Form is invalid:', this.productForm.errors);
-      console.log('Form values:', this.productForm.value);
+      this.productService.createProduct(product, this.selectedFile).subscribe({
+        next: () => this.router.navigate(['/products']),
+        error: (err) => console.error('Greška prilikom kreiranja:', err),
+      });
     }
   }
 
   onImageError(event: Event) {
     console.error('Image failed to load:', this.previewUrl);
-    this.previewUrl = undefined;
+    this.previewUrl =
+      'https://res.cloudinary.com/dgr65fixz/image/upload/v1761391917/products/u0etewaxj3sdckqfrczj.jpg';
   }
 }

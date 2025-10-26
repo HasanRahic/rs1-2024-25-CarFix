@@ -3,11 +3,14 @@ using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
+using API.DTOs;
+using Infrastructure.Services;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 
 namespace API.Controllers;
 
-
-public class ProductsController(IGenericRepository<Product> repo) : BaseApiController
+public class ProductsController(IGenericRepository<Product> repo, CloudinaryService cloudinaryService) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts([FromQuery] ProductSpecParams specParams)
@@ -29,8 +32,30 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
     }
 
     [HttpPost]
-    public async Task<ActionResult<Product>> CreateProduct(Product product)
+    public async Task<ActionResult<Product>> CreateProduct([FromForm] CreateProductDto dto)
     {
+        var product = new Product
+        {
+            Name = dto.Name,
+            Description = dto.Description,
+            Price = dto.Price,
+            Brand = dto.Brand,
+            Type = dto.Type,
+            QuantityInStock = dto.QuantityInStock,
+            PictureUrl = ""
+        };
+
+        // Upload slike na Cloudinary
+        if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+        {
+            var uploadResult = await cloudinaryService.UploadImageAsync(dto.ImageFile);
+
+            if (uploadResult != null)
+            {
+                product.PictureUrl = uploadResult; // tvoj CloudinaryService vraća string (URL)
+            }
+        }
+
         repo.Add(product);
 
         if (await repo.SaveAllAsync())
@@ -39,22 +64,6 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
         }
 
         return BadRequest("Problem creating product");
-    }
-
-    [HttpPut("{id:int}")]
-    public async Task<ActionResult> UpdateProduct(int id, Product product)
-    {
-        if (product.Id != id || !ProductExists(id))
-            return BadRequest("Cannot update this product");
-
-        repo.Update(product);
-
-        if (await repo.SaveAllAsync())
-        {
-            return NoContent();
-        }
-
-        return BadRequest("Problem updating the product");
     }
 
     [HttpDelete("{id:int}")]
@@ -90,26 +99,45 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
         return Ok(await repo.ListAsync(spec));
     }
 
-    [HttpPost("upload")]
-    public async Task<ActionResult<string>> UploadImage(IFormFile file)
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult> UpdateProduct(int id, [FromBody] UpdateProductDto dto)
     {
-        if (file == null || file.Length == 0) return BadRequest("No file uploaded");
+        var product = await repo.GetByIdAsync(id);
+        if (product == null) return NotFound();
 
-        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
-        if (!Directory.Exists(uploadsFolder))
-            Directory.CreateDirectory(uploadsFolder);
+        product.Name = dto.Name;
+        product.Description = dto.Description;
+        product.Price = dto.Price;
+        product.Brand = dto.Brand;
+        product.Type = dto.Type;
+        product.QuantityInStock = dto.QuantityInStock;
 
-        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-        var filePath = Path.Combine(uploadsFolder, fileName);
+        if (await repo.SaveAllAsync()) return NoContent();
 
-        using (var stream = new FileStream(filePath, FileMode.Create))
+        return BadRequest("Problem updating product");
+    }
+
+    [HttpPut("{id:int}/image")]
+    public async Task<ActionResult> UpdateProductImage(int id, [FromForm] UpdateProductImageDto dto)
+    {
+        var product = await repo.GetByIdAsync(id);
+        if (product == null) return NotFound();
+
+        if (dto.ImageFile != null && dto.ImageFile.Length > 0)
         {
-            await file.CopyToAsync(stream);
+            var uploadResult = await cloudinaryService.UploadImageAsync(dto.ImageFile);
+            if (!string.IsNullOrEmpty(uploadResult))
+            {
+                product.PictureUrl = uploadResult;
+            }
         }
 
-        var url = $"https://localhost:5001/images/{fileName}";
-        return Ok(url);
+        if (await repo.SaveAllAsync()) return NoContent();
+
+        return BadRequest("Problem updating product image");
     }
+
+
 
     private bool ProductExists(int id)
     {
