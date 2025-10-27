@@ -5,14 +5,15 @@
             aria-label="Select page">
         </mat-paginator>
 
-        <form #searchForm="ngForm" (ngSubmit)="onSearchChange()"
-            class="relative flex items-center w-full max-w-md mx-4">
+        <form class="relative flex items-center w-full max-w-md mx-4">
             <input type="search" class="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-4xl"
-                placeholder="Search" name="search" [(ngModel)]="shopParams.search" />
-                <button mat-icon-button type="submit" class="absolute -inset-y-1 right-18 flex items-center pl-3">
-                    <mat-icon>search</mat-icon>
-                </button>
+                placeholder="Search" name="search" [(ngModel)]="shopParams.search"
+                (input)="onSearchChange($event)" />
+            <button mat-icon-button type="button" class="absolute -inset-y-1 right-18 flex items-center pl-3">
+                <mat-icon>search</mat-icon>
+            </button>
         </form>
+
 
         <div class="flex gap-3">
             <button class="match-input-height" mat-stroked-button (click)="openFiltersDialog()">

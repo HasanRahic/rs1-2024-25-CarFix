@@ -13,11 +13,12 @@ import {
   MatSelectionList,
   MatSelectionListChange,
 } from '@angular/material/list';
-import { MatPaginator, PageEvent } from '@angular/material/paginator'
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ShopParams } from '../../shared/models/shopParams';
 import { Pagination } from '../../shared/models/pagination';
 import { FormsModule } from '@angular/forms';
-import { MatIconButton } from "@angular/material/button";
+import { MatIconButton } from '@angular/material/button';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-shop',
@@ -31,8 +32,8 @@ import { MatIconButton } from "@angular/material/button";
     MatMenuTrigger,
     MatPaginator,
     FormsModule,
-    MatIconButton
-],
+    MatIconButton,
+  ],
   templateUrl: './shop.component.html',
   styleUrl: './shop.component.scss',
 })
@@ -46,10 +47,19 @@ export class ShopComponent implements OnInit {
     { name: 'Price: High-Low', value: 'priceDesc' },
   ];
   shopParams = new ShopParams();
-  pageSizeOptions = [5,10,15,20]
+  pageSizeOptions = [5, 10, 15, 20];
+  private searchSubject = new Subject<string>();
 
   ngOnInit(): void {
     this.initializeShop();
+
+    this.searchSubject
+      .pipe(debounceTime(400), distinctUntilChanged())
+      .subscribe((term) => {
+        this.shopParams.search = term;
+        this.shopParams.pageNumber = 1;
+        this.getProducts();
+      });
   }
 
   initializeShop() {
@@ -60,17 +70,18 @@ export class ShopComponent implements OnInit {
 
   getProducts() {
     this.shopService.getProducts(this.shopParams).subscribe({
-      next: (response) => this.products = response,
+      next: (response) => (this.products = response),
       error: (error) => console.log(error),
     });
   }
 
-  onSearchChange(){
-    this.shopParams.pageNumber = 1;
-    this.getProducts();
+  onSearchChange(event: Event) {
+    const input = event.target as HTMLInputElement; 
+    const term = input?.value || '';
+    this.searchSubject.next(term);
   }
 
-  handlePageEvent(event: PageEvent){
+  handlePageEvent(event: PageEvent) {
     this.shopParams.pageNumber = event.pageIndex + 1;
     this.shopParams.pageSize = event.pageSize;
     this.getProducts();

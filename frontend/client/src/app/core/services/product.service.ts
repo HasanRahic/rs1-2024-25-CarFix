@@ -52,13 +52,12 @@ export class ProductService {
   }
 
   updateProduct(id: number, product: any) {
-    // klasični JSON PUT
     return this.http.put(this.baseUrl + 'products/' + id, product);
   }
 
   updateProductImage(id: number, file: File) {
     const formData = new FormData();
-    formData.append('ImageFile', file, file.name); // ključ mora biti "ImageFile"
+    formData.append('ImageFile', file, file.name);
     return this.http.put(this.baseUrl + 'products/' + id + '/image', formData);
   }
 

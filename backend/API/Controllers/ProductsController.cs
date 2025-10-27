@@ -45,14 +45,13 @@ public class ProductsController(IGenericRepository<Product> repo, CloudinaryServ
             PictureUrl = ""
         };
 
-        // Upload slike na Cloudinary
         if (dto.ImageFile != null && dto.ImageFile.Length > 0)
         {
             var uploadResult = await cloudinaryService.UploadImageAsync(dto.ImageFile);
 
             if (uploadResult != null)
             {
-                product.PictureUrl = uploadResult; // tvoj CloudinaryService vraća string (URL)
+                product.PictureUrl = uploadResult; 
             }
         }
 
