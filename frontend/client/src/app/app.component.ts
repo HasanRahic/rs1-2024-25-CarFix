@@ -5,6 +5,7 @@ import { Product } from './shared/models/product';
 import { Pagination } from './shared/models/pagination';
 import { ShopService } from './core/services/shop.service';
 import { RouterOutlet } from "@angular/router";
+import { ShopComponent } from './features/shop/shop.component';
 
 @Component({
   selector: 'app-root',

@@ -4,10 +4,17 @@ import { RegisterComponent } from './features/account/register/register.componen
 import { ShopComponent } from './features/shop/shop.component';
 import { ProductListComponent } from './features/products/product-list/product-list.component';
 import { ProductFormComponent } from './features/products/product-form/product-form.component';
+import { CartComponent } from './features/cart/cart.component';
+import { HomeComponent } from './features/home/home.component';
+import { ProductDetailsComponent } from './features/shop/product-details/product-details.component';
+import { CheckoutComponent } from './features/checkout/checkout.component';
 
 export const routes: Routes = [
-  { path: '', component: ShopComponent },
+  { path: '', component: HomeComponent },
   { path: 'shop', component: ShopComponent },
+  { path: 'shop/:id', component: ProductDetailsComponent },
+  { path: 'cart', component: CartComponent },
+  { path: 'checkout', component: CheckoutComponent },
   { path: 'account/login', component: LoginComponent },
   { path: 'account/register', component: RegisterComponent },
   { 
@@ -18,5 +25,6 @@ export const routes: Routes = [
       { path: ':id', component: ProductListComponent },
       { path: 'edit/:id', component: ProductFormComponent } // Dodajte ovo
     ]
-  }
+  },
+  { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
