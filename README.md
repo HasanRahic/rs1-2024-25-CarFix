@@ -145,8 +145,9 @@ Frontend runs on: http://localhost:4200
 
 Backend runs on: https://localhost:5001/api
 
-#👤 Author
+# 👤 Author
 
 Hasan Rahić
 Faculty of Information Technologies – Mostar
 RS1 – Web Technologies
+
