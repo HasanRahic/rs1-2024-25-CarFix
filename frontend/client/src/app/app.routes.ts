@@ -9,9 +9,13 @@ import { HomeComponent } from './features/home/home.component';
 import { ProductDetailsComponent } from './features/shop/product-details/product-details.component';
 import { CheckoutComponent } from './features/checkout/checkout.component';
 import { authGuard } from './core/guards/auth-guard';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { SettingsComponent } from './features/settings/settings.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   { path: 'shop', component: ShopComponent },
   { path: 'shop/:id', component: ProductDetailsComponent },
   { path: 'cart', component: CartComponent },

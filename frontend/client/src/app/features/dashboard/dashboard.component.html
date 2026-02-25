@@ -1,0 +1,33 @@
+<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-1 text-center">
+  <mat-card>
+    <mat-card-content>
+      <div class="text-sm opacity-70">Logged user</div>
+      <div class="text-lg font-semibold">
+        {{ accountService.currentUser()?.email || 'Guest' }}
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-content>
+      <div class="text-sm opacity-70">Total products</div>
+      <div class="text-2xl font-semibold">{{ totalProducts }}</div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-content>
+      <div class="text-sm opacity-70">Cart items</div>
+      <div class="text-2xl font-semibold">{{ cartService.itemCount() }}</div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-content>
+      <div class="text-sm opacity-70">Cart total</div>
+      <div class="text-2xl font-semibold">
+        {{ (cartService.totals()?.total || 0) | currency }}
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
