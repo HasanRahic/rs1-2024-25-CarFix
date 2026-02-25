@@ -20,7 +20,6 @@ export class DashboardComponent {
   totalProducts = 0;
 
   ngOnInit(): void {
-    // Uzmi samo 1 proizvod, bitan nam je "count" (ukupan broj)
     const params = new ShopParams();
     params.pageSize = 1;
     params.pageNumber = 1;
