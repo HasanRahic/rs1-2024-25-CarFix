@@ -1,0 +1,25 @@
+CarFix eCommerce
+
+Seminarski rad iz RS1 predmeta.
+
+Tehnologije
+- .NET 9
+- Entity Framework Core
+- SQL Server (Docker)
+- Redis
+- Angular
+- JWT Authentication
+
+Pokretanje projekta
+
+1. Pokrenuti Docker:
+docker compose up -d
+
+2. Pokrenuti backend:
+cd backend/api
+dotnet run
+
+3. Pokrenuti frontend:
+cd frontend
+npm install
+ng serve
