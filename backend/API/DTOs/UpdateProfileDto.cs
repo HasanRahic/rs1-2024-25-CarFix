@@ -1,12 +1,10 @@
 using System;
-using Microsoft.AspNetCore.Identity;
 
-namespace Core.Entities;
+namespace API.DTOs;
 
-public class AppUser : IdentityUser
+public class UpdateProfileDto
 {
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? Description { get; set; }
-    public Address? Address { get; set; }
 }

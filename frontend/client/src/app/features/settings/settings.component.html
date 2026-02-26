@@ -1,33 +1,38 @@
-<div class="container mx-auto p-4 max-w-xl">
+<div class="container mx-auto p-4 max-w-xl ">
     <h2 class="text-2xl font-semibold mb-4">Settings</h2>
 
-    <div class="p-4 border rounded mb-4">
-        <div class="text-sm opacity-70">Logged as</div>
-        <div class="font-semibold">
-            {{ accountService.currentUser()?.email }}
+    <form [formGroup]="form" class="space-y-4">
+        <div>
+            <label>First name</label>
+            <input class="border rounded p-2 w-full" formControlName="firstName" />
         </div>
-    </div>
 
-    <div class="p-4 border rounded mb-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="font-semibold">Theme</div>
-                <div class="text-sm opacity-70">Dark / Light mode</div>
-            </div>
-
-            <button class="px-3 py-2 border rounded" (click)="toggleTheme()">
-                {{ isDark ? 'Dark' : 'Light' }}
-            </button>
+        <div>
+            <label>Last name</label>
+            <input class="border rounded p-2 w-full" formControlName="lastName" />
         </div>
-    </div>
 
+        <div>
+            <label>Email (locked)</label>
+            <input class="border rounded p-2 w-full bg-gray-100" formControlName="email" />
+        </div>
 
-    <div class="p-4 border rounded">
+        <div>
+            <label>Description</label>
+            <textarea class="border rounded p-2 w-full" rows="4" formControlName="description"></textarea>
+        </div>
+    </form>
+    
+    
+    <div class="p-4 border rounded mt-4">
         <div class="flex items-center justify-between">
             <div class="font-semibold">Account</div>
-            <button class="px-3 py-2 border rounded" (click)="logout()">
+            <button mat-icon-button class="px-3 py-2 border rounded bg-blue-600 text-white hover:bg-blue-700 cursor-pointer" (click)="logout()">
                 Logout
             </button>
         </div>
     </div>
-</div>
+    <div class="text-m mt-2">
+        <span *ngIf="saving">Saving…</span>
+        <span *ngIf="saved">Saved ✅</span>
+    </div>

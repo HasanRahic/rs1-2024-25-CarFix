@@ -60,6 +60,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
             user.FirstName,
             user.LastName,
             user.Email,
+            user.Description,
             Address = user.Address?.toDto()
         });
     }
@@ -90,5 +91,23 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
         if (!result.Succeeded) return BadRequest("Problem updating user address");
 
         return Ok(user.Address.toDto());
+    }
+
+
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult> UpdateProfile(UpdateProfileDto dto)
+    {
+        var user = await signInManager.UserManager.GetUserByEmailWithAddress(User);
+        if (user == null) return Unauthorized();
+
+        user.FirstName = dto.FirstName;
+        user.LastName = dto.LastName;
+        user.Description = dto.Description;
+
+        var result = await signInManager.UserManager.UpdateAsync(user);
+        if (!result.Succeeded) return BadRequest("Problem updating profile");
+
+        return NoContent();
     }
 }

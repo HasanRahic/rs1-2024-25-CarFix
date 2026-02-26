@@ -8,7 +8,7 @@ import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [MatCard, MatCardContent, MatCardTitle, CurrencyPipe],
+  imports: [MatCard, MatCardContent, CurrencyPipe],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
