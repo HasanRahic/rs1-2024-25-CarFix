@@ -15,7 +15,7 @@
           <span class="text-xs mt-1 text-gray-500">
             @if (step === 1) { Adresa }
             @if (step === 2) { Dostava }
-            @if (step === 3) { Pregled }
+            @if (step === 3) { Plaćanje }
           </span>
         </div>
         @if (step < 3) {
@@ -146,10 +146,10 @@
     </div>
   }
 
-  <!-- STEP 3: REVIEW ORDER -->
+  <!-- STEP 3: PAYMENT -->
   @if (currentStep === 3) {
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- Cart Items -->
+      <!-- Cart Items + Stripe -->
       <div class="md:col-span-2 bg-white rounded-lg shadow p-6">
         <h2 class="text-xl font-semibold mb-4">Pregled narudžbe</h2>
 
@@ -169,14 +169,13 @@
           </div>
         }
 
-        <!-- Address Summary -->
-        <div class="mt-4 pt-4 border-t">
-          <h3 class="font-semibold text-gray-700 mb-2">Adresa dostave</h3>
-          <p class="text-sm text-gray-600">
-            {{addressForm.value.firstName}} {{addressForm.value.lastName}}<br>
-            {{addressForm.value.street}}, {{addressForm.value.city}}<br>
-            {{addressForm.value.state}} {{addressForm.value.postalCode}}
-          </p>
+        <!-- Stripe Payment Element -->
+        <div class="mt-6 pt-4 border-t">
+          <h3 class="font-semibold text-gray-700 mb-3">Podaci o kartici</h3>
+          <div id="payment-element" class="min-h-[100px]"></div>
+          @if (paymentError) {
+            <p class="text-red-500 text-sm mt-2">{{ paymentError }}</p>
+          }
         </div>
       </div>
 

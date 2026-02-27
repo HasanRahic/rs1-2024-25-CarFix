@@ -6,6 +6,9 @@ import { CartService } from '../../core/services/cart.service';
 import { AccountService } from '../../core/services/account.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
+import { firstValueFrom } from 'rxjs';
+import { CartType } from '../../shared/models/cart';
 
 type DeliveryMethod = {
   id: number;
@@ -28,11 +31,14 @@ export class CheckoutComponent implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
 
-  currentStep = 1; // 1=Address, 2=Delivery, 3=Review, 4=Success
+  currentStep = 1; // 1=Address, 2=Delivery, 3=Payment, 4=Success
   deliveryMethods: DeliveryMethod[] = [];
   selectedDeliveryMethod: DeliveryMethod | null = null;
   isSubmitting = false;
-  orderConfirmed = false;
+  paymentError: string | null = null;
+
+  private stripe: Stripe | null = null;
+  private elements: StripeElements | null = null;
 
   addressForm!: FormGroup;
 
@@ -65,13 +71,13 @@ export class CheckoutComponent implements OnInit {
   }
 
   loadDeliveryMethods() {
-    this.http.get<DeliveryMethod[]>(environment.apiUrl + 'orders/delivery-methods').subscribe({
+    this.http.get<DeliveryMethod[]>(environment.apiUrl + 'payments/delivery-methods').subscribe({
       next: methods => this.deliveryMethods = methods,
       error: () => {
         // Fallback if endpoint doesn't exist yet
         this.deliveryMethods = [
-          { id: 1, shortName: 'Standard', deliveryTime: '5-7 days', description: 'Standard delivery', price: 5 },
-          { id: 2, shortName: 'Express', deliveryTime: '2-3 days', description: 'Express delivery', price: 10 },
+          { id: 1, shortName: 'Standard', deliveryTime: '5-7 dana', description: 'Standardna dostava', price: 5 },
+          { id: 2, shortName: 'Express', deliveryTime: '2-3 dana', description: 'Express dostava', price: 10 },
         ];
       }
     });
@@ -102,27 +108,59 @@ export class CheckoutComponent implements OnInit {
       return;
     }
     this.currentStep++;
+
+    if (this.currentStep === 3) {
+      setTimeout(() => this.initStripe(), 150);
+    }
+  }
+
+  private async initStripe() {
+    const cart = this.cartService.cart();
+    if (!cart) return;
+
+    try {
+      const updatedCart = await firstValueFrom(
+        this.http.post<CartType>(environment.apiUrl + 'payments/' + cart.id, {})
+      );
+      if (!updatedCart.clientSecret) return;
+
+      this.stripe = await loadStripe(environment.stripePublishableKey);
+      if (!this.stripe) return;
+
+      this.elements = this.stripe.elements({ clientSecret: updatedCart.clientSecret });
+      const paymentElement = this.elements.create('payment');
+      paymentElement.mount('#payment-element');
+    } catch (err) {
+      console.error('Stripe init error:', err);
+    }
   }
 
   prevStep() {
     if (this.currentStep > 1) this.currentStep--;
   }
 
-  placeOrder() {
-    if (!this.addressForm.valid || !this.selectedDeliveryMethod) return;
+  async placeOrder() {
+    if (!this.stripe || !this.elements) return;
     this.isSubmitting = true;
+    this.paymentError = null;
 
-    // Simulate order placement (Stripe not configured yet)
-    setTimeout(() => {
+    const { error } = await this.stripe.confirmPayment({
+      elements: this.elements,
+      redirect: 'if_required'
+    });
+
+    if (error) {
+      this.paymentError = error.message ?? 'Plaćanje nije uspjelo. Pokušajte ponovo.';
       this.isSubmitting = false;
-      this.currentStep = 4;
-      this.orderConfirmed = true;
-      // Clear cart after order
-      const cart = this.cartService.cart();
-      if (cart) {
-        this.http.delete(environment.apiUrl + 'cart?id=' + cart.id).subscribe();
-        this.cartService.cart.set(null);
-      }
-    }, 1500);
+      return;
+    }
+
+    const cart = this.cartService.cart();
+    if (cart) {
+      this.http.delete(environment.apiUrl + 'cart?id=' + cart.id).subscribe();
+      this.cartService.cart.set(null);
+    }
+    this.isSubmitting = false;
+    this.currentStep = 4;
   }
 }
