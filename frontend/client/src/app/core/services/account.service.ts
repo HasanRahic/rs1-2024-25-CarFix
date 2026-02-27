@@ -1,28 +1,28 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { Address, User } from '../../shared/models/user';
-import { map } from 'rxjs';
+import { map, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AccountService {
-  baseUrl = 'https://localhost:5001/api/';
+  baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
   currentUser = signal<User | null>(null);
 
   login(values: any) {
-    let params = new HttpParams();
-    params = params.append('useCookies', true);
     return this.http
-      .post<User>(this.baseUrl + 'login', values, { params })
+      .post<{ token: string }>(this.baseUrl + 'account/login', values)
       .pipe(
-        map((user) => {
-          if (user) {
-            this.currentUser.set(user);
+        tap((res) => {
+          if (res?.token) {
+            localStorage.setItem('token', res.token);
           }
-          return user;
         }),
+        // after storing token, fetch full user info
+        map(() => null)
       );
   }
 
@@ -40,6 +40,8 @@ export class AccountService {
   }
 
   logout() {
+    localStorage.removeItem('token');
+    this.currentUser.set(null);
     return this.http.post(this.baseUrl + 'account/logout', {});
   }
 

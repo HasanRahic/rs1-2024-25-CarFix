@@ -10,20 +10,74 @@
     </button>
   </div>
 
+  <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Search</label>
+        <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()" placeholder="Search by name..."
+          class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Brand</label>
+        <input type="text" [(ngModel)]="brandFilter" (ngModelChange)="onFilterChange()" placeholder="Filter by brand..."
+          class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Type</label>
+        <input type="text" [(ngModel)]="typeFilter" (ngModelChange)="onFilterChange()" placeholder="Filter by type..."
+          class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Min Price (€)</label>
+        <input type="number" [(ngModel)]="minPriceFilter" (ngModelChange)="onFilterChange()" placeholder="0"
+          class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Sort</label>
+        <select [(ngModel)]="sortFilter" (ngModelChange)="onFilterChange()" class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md">
+          <option value="">Default</option>
+          <option value="name">Name A-Z</option>
+          <option value="priceAsc">Price ↑</option>
+          <option value="priceDesc">Price ↓</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex gap-2 mt-3">
+      <button (click)="clearFilters()"
+        class="bg-gray-200 text-gray-700 px-4 py-1 text-sm rounded-md hover:bg-gray-300">Clear Filters</button>
+    </div>
+  </div>
+
   <div class="bg-white rounded-lg shadow-md overflow-hidden">
     <table class="w-full">
       <thead class="bg-gray-50">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brand</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+            (click)="sortBy('name')">
+            Name
+            <span *ngIf="sortColumn === 'name'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+            (click)="sortBy('brand')">
+            Brand
+            <span *ngIf="sortColumn === 'brand'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+            (click)="sortBy('type')">
+            Type
+            <span *ngIf="sortColumn === 'type'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+            (click)="sortBy('price')">
+            Price
+            <span *ngIf="sortColumn === 'price'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
           <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        <tr *ngFor="let product of products" class="hover:bg-gray-50 transition duration-200">
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{product.name}}</td>
+        <tr *ngFor="let product of sortedProducts" class="hover:bg-gray-50 transition duration-200">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" [title]="product.name">{{product.name | truncate:30}}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{product.brand}}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{product.type}}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{product.price | currency}}</td>

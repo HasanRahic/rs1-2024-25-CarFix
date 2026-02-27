@@ -1,3 +1,230 @@
-<div class="mt-5">
-    <h1 class="text-2xl">Only authorized users should be able to see this</h1>
+<div class="max-w-4xl mx-auto mt-8 px-4">
+  <h1 class="text-3xl font-bold mb-6">Checkout</h1>
+
+  <!-- Stepper Indicator -->
+  <div class="flex items-center justify-center mb-8">
+    @for (step of [1,2,3]; track step) {
+      <div class="flex items-center">
+        <div class="flex flex-col items-center">
+          <div [class]="'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 ' +
+            (currentStep > step ? 'bg-green-500 border-green-500 text-white' :
+             currentStep === step ? 'bg-blue-600 border-blue-600 text-white' :
+             'bg-white border-gray-300 text-gray-400')">
+            @if (currentStep > step) { ✓ } @else { {{step}} }
+          </div>
+          <span class="text-xs mt-1 text-gray-500">
+            @if (step === 1) { Adresa }
+            @if (step === 2) { Dostava }
+            @if (step === 3) { Pregled }
+          </span>
+        </div>
+        @if (step < 3) {
+          <div [class]="'h-0.5 w-16 mx-2 ' + (currentStep > step ? 'bg-green-500' : 'bg-gray-300')"></div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- STEP 1: DELIVERY ADDRESS -->
+  @if (currentStep === 1) {
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold mb-4">Adresa dostave</h2>
+      <form [formGroup]="addressForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ime *</label>
+          <input formControlName="firstName" type="text"
+            [class]="'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ' +
+              (addressForm.get('firstName')?.invalid && addressForm.get('firstName')?.touched ? 'border-red-500' : 'border-gray-300')">
+          @if (addressForm.get('firstName')?.invalid && addressForm.get('firstName')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Ime je obavezno.</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Prezime *</label>
+          <input formControlName="lastName" type="text"
+            [class]="'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ' +
+              (addressForm.get('lastName')?.invalid && addressForm.get('lastName')?.touched ? 'border-red-500' : 'border-gray-300')">
+          @if (addressForm.get('lastName')?.invalid && addressForm.get('lastName')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Prezime je obavezno.</p>
+          }
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ulica *</label>
+          <input formControlName="street" type="text"
+            [class]="'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ' +
+              (addressForm.get('street')?.invalid && addressForm.get('street')?.touched ? 'border-red-500' : 'border-gray-300')">
+          @if (addressForm.get('street')?.invalid && addressForm.get('street')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Ulica je obavezna.</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Grad *</label>
+          <input formControlName="city" type="text"
+            [class]="'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ' +
+              (addressForm.get('city')?.invalid && addressForm.get('city')?.touched ? 'border-red-500' : 'border-gray-300')">
+          @if (addressForm.get('city')?.invalid && addressForm.get('city')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Grad je obavezan.</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Država/Regija *</label>
+          <input formControlName="state" type="text"
+            [class]="'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ' +
+              (addressForm.get('state')?.invalid && addressForm.get('state')?.touched ? 'border-red-500' : 'border-gray-300')">
+          @if (addressForm.get('state')?.invalid && addressForm.get('state')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Država je obavezna.</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Poštanski broj *</label>
+          <input formControlName="postalCode" type="text"
+            [class]="'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ' +
+              (addressForm.get('postalCode')?.invalid && addressForm.get('postalCode')?.touched ? 'border-red-500' : 'border-gray-300')">
+          @if (addressForm.get('postalCode')?.invalid && addressForm.get('postalCode')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Poštanski broj je obavezan.</p>
+          }
+        </div>
+      </form>
+
+      <div class="flex justify-between mt-6">
+        <a routerLink="/cart" class="px-5 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+          ← Nazad na korpu
+        </a>
+        <button (click)="nextStep()"
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+          Dalje →
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- STEP 2: DELIVERY METHOD -->
+  @if (currentStep === 2) {
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold mb-4">Metoda dostave</h2>
+
+      <div class="space-y-3">
+        @for (method of deliveryMethods; track method.id) {
+          <div (click)="selectDeliveryMethod(method)"
+            [class]="'border-2 rounded-lg p-4 cursor-pointer flex justify-between items-center transition-colors ' +
+              (selectedDeliveryMethod?.id === method.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-400')">
+            <div class="flex items-center gap-3">
+              <div [class]="'w-5 h-5 rounded-full border-2 flex items-center justify-center ' +
+                (selectedDeliveryMethod?.id === method.id ? 'border-blue-600' : 'border-gray-400')">
+                @if (selectedDeliveryMethod?.id === method.id) {
+                  <div class="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                }
+              </div>
+              <div>
+                <p class="font-semibold">{{method.shortName}}</p>
+                <p class="text-sm text-gray-500">{{method.description}} · {{method.deliveryTime}}</p>
+              </div>
+            </div>
+            <span class="font-bold text-blue-700">{{method.price | currency:'EUR'}}</span>
+          </div>
+        }
+      </div>
+
+      @if (!selectedDeliveryMethod) {
+        <p class="text-red-500 text-sm mt-2">Molimo odaberite metodu dostave.</p>
+      }
+
+      <div class="flex justify-between mt-6">
+        <button (click)="prevStep()" class="px-5 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+          ← Nazad
+        </button>
+        <button (click)="nextStep()" [disabled]="!selectedDeliveryMethod"
+          [class]="'px-6 py-2 rounded-lg font-medium text-white ' + (selectedDeliveryMethod ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed')">
+          Dalje →
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- STEP 3: REVIEW ORDER -->
+  @if (currentStep === 3) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Cart Items -->
+      <div class="md:col-span-2 bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Pregled narudžbe</h2>
+
+        @if (cartService.cart(); as cart) {
+          <div class="divide-y">
+            @for (item of cart.items; track item.productId) {
+              <div class="flex items-center gap-4 py-3">
+                <img [src]="item.pictureUrl" [alt]="item.productName"
+                  class="w-14 h-14 object-cover rounded-lg border">
+                <div class="flex-1">
+                  <p class="font-medium">{{item.productName}}</p>
+                  <p class="text-sm text-gray-500">{{item.brand}} · Kol: {{item.quantity}}</p>
+                </div>
+                <span class="font-semibold">{{item.price * item.quantity | currency:'EUR'}}</span>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Address Summary -->
+        <div class="mt-4 pt-4 border-t">
+          <h3 class="font-semibold text-gray-700 mb-2">Adresa dostave</h3>
+          <p class="text-sm text-gray-600">
+            {{addressForm.value.firstName}} {{addressForm.value.lastName}}<br>
+            {{addressForm.value.street}}, {{addressForm.value.city}}<br>
+            {{addressForm.value.state}} {{addressForm.value.postalCode}}
+          </p>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="bg-white rounded-lg shadow p-6 h-fit">
+        <h2 class="text-lg font-semibold mb-4">Sažetak</h2>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Međuzbir</span>
+            <span>{{cartSubtotal | currency:'EUR'}}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Dostava ({{selectedDeliveryMethod?.shortName}})</span>
+            <span>{{deliveryPrice | currency:'EUR'}}</span>
+          </div>
+          <div class="flex justify-between font-bold text-base border-t pt-2 mt-2">
+            <span>Ukupno</span>
+            <span class="text-blue-700">{{orderTotal | currency:'EUR'}}</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 mt-6">
+          <button (click)="prevStep()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 text-sm">
+            ← Izmjeni
+          </button>
+          <button (click)="placeOrder()" [disabled]="isSubmitting"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-60">
+            @if (isSubmitting) { Slanje... } @else { Potvrdi narudžbu }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- STEP 4: SUCCESS -->
+  @if (currentStep === 4) {
+    <div class="bg-white rounded-lg shadow p-10 text-center">
+      <div class="text-green-500 text-6xl mb-4">✓</div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Narudžba potvrđena!</h2>
+      <p class="text-gray-500 mb-6">Hvala vam na kupovini. Vaša narudžba je uspješno zaprimljena.</p>
+      <div class="flex justify-center gap-4">
+        <a routerLink="/shop" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Nastavi kupovinu
+        </a>
+        <a routerLink="/" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+          Početna
+        </a>
+      </div>
+    </div>
+  }
 </div>

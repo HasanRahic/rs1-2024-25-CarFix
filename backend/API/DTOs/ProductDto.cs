@@ -1,16 +1,13 @@
-using System;
+namespace API.DTOs;
 
-namespace Core.Entities;
-
-public class Product : BaseEntity
+public class ProductDto
 {
+    public int Id { get; set; }
     public required string Name { get; set; }
     public required string Description { get; set; }
     public decimal Price { get; set; }
     public required string PictureUrl { get; set; }
-    public string? PublicId { get; set; }
     public required string Type { get; set; }
     public required string Brand { get; set; }
     public int QuantityInStock { get; set; }
-    public ICollection<ProductTag> Tags { get; set; } = [];
 }

@@ -25,6 +25,7 @@ export class ProductFormComponent implements OnInit {
   product?: Product;
   currentPage?: number;
   itemsPerPage?: number;
+  isDragging = false;
 
   private fb = inject(FormBuilder);
   private productService = inject(ProductService);
@@ -59,14 +60,39 @@ export class ProductFormComponent implements OnInit {
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.previewUrl = reader.result as string;
-      };
-      reader.readAsDataURL(this.selectedFile);
+      this.processFile(input.files[0]);
     }
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.processFile(files[0]);
+    }
+  }
+
+  private processFile(file: File) {
+    this.selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.previewUrl = reader.result as string;
+    };
+    reader.readAsDataURL(file);
   }
 
   loadProduct(id: number): void {
@@ -100,7 +126,7 @@ export class ProductFormComponent implements OnInit {
 
   onSubmit() {
     if (!this.productForm.valid) {
-      alert('Popuni sva polja!');
+      this.productForm.markAllAsTouched();
       return;
     }
 

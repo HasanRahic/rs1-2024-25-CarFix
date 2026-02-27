@@ -3,16 +3,29 @@ using System.Security.Claims;
 using API.DTOs;
 using API.Extensions;
 using Core.Entities;
+using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
 
-public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
+public class AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ITokenService tokenService) : BaseApiController
 {
+    [HttpPost("login")]
+    public async Task<ActionResult> Login([FromBody] LoginDto loginDto)
+    {
+        var user = await userManager.FindByEmailAsync(loginDto.Email);
+        if (user == null) return Unauthorized("Invalid email or password");
+
+        var result = await signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+        if (!result.Succeeded) return Unauthorized("Invalid email or password");
+
+        var token = await tokenService.GenerateToken(user);
+        return Ok(new { token });
+    }
+
     [HttpPost("register")]
     public async Task<ActionResult> Register(RegisterDto registerDto)
     {
@@ -24,7 +37,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
             UserName = registerDto.Email
         };
 
-        var result = await signInManager.UserManager.CreateAsync(user, registerDto.Password);
+        var result = await userManager.CreateAsync(user, registerDto.Password);
 
         if (!result.Succeeded)
         {
@@ -41,10 +54,9 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
 
     [Authorize]
     [HttpPost("logout")]
-    public async Task<ActionResult> Logout()
+    public ActionResult Logout()
     {
-        await signInManager.SignOutAsync();
-
+        // JWT is stateless — client deletes the token
         return NoContent();
     }
 
@@ -53,7 +65,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
     {
         if (User.Identity?.IsAuthenticated == false) return NoContent();
 
-        var user = await signInManager.UserManager.GetUserByEmailWithAddress(User);
+        var user = await userManager.GetUserByEmailWithAddress(User);
 
         return Ok(new
         {
@@ -75,7 +87,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
     [HttpPost("address")]
     public async Task<ActionResult<Address>> CreateOrUpdateAddress(AddressDto addressDto)
     {
-        var user = await signInManager.UserManager.GetUserByEmailWithAddress(User);
+        var user = await userManager.GetUserByEmailWithAddress(User);
 
         if (user.Address == null)
         {
@@ -86,7 +98,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
             user.Address.UpdateFromDto(addressDto);
         }
 
-        var result = await signInManager.UserManager.UpdateAsync(user);
+        var result = await userManager.UpdateAsync(user);
 
         if (!result.Succeeded) return BadRequest("Problem updating user address");
 
@@ -98,14 +110,14 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
     [HttpPut("profile")]
     public async Task<ActionResult> UpdateProfile(UpdateProfileDto dto)
     {
-        var user = await signInManager.UserManager.GetUserByEmailWithAddress(User);
+        var user = await userManager.GetUserByEmailWithAddress(User);
         if (user == null) return Unauthorized();
 
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
         user.Description = dto.Description;
 
-        var result = await signInManager.UserManager.UpdateAsync(user);
+        var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded) return BadRequest("Problem updating profile");
 
         return NoContent();

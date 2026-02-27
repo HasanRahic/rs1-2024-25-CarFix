@@ -6,9 +6,9 @@ namespace Core.Specifications;
 public class ProductSpecification : BaseSpecification<Product>
 {
     public ProductSpecification(ProductSpecParams specParams) : base(x =>
-        (string.IsNullOrEmpty(specParams.Search) || x.Name.ToLower().Contains(specParams.Search)) &&
-        (!specParams.Brands.Any() || specParams.Brands.Contains(x.Brand)) &&
-        (!specParams.Types.Any() || specParams.Types.Contains(x.Type)) 
+        (string.IsNullOrEmpty(specParams.Search) || x.Name.ToLower().Contains(specParams.Search.ToLower())) &&
+        (!specParams.Brands.Any() || specParams.Brands.Any(b => x.Brand.ToLower().Contains(b.ToLower()))) &&
+        (!specParams.Types.Any() || specParams.Types.Any(t => x.Type.ToLower().Contains(t.ToLower())))
     )
     {
         ApplyPaging(specParams.PageSize * (specParams.PageIndex - 1), specParams.PageSize);

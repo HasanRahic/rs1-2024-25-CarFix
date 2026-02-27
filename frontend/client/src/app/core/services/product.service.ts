@@ -3,18 +3,25 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Product } from '../../shared/models/product';
 import { Pagination } from '../../shared/models/pagination';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
-  baseUrl = 'https://localhost:5001/api/';
-  baseImageUrl = 'https://localhost:5001';
+  baseUrl = environment.apiUrl;
+  baseImageUrl = environment.apiUrl.replace('/api/', '');
   private http = inject(HttpClient);
 
   getProducts(
     pageIndex?: number,
-    pageSize?: number
+    pageSize?: number,
+    search?: string,
+    brand?: string,
+    type?: string,
+    minPrice?: number,
+    maxPrice?: number,
+    sort?: string
   ): Observable<Pagination<Product>> {
     let params = new HttpParams();
 
@@ -22,6 +29,10 @@ export class ProductService {
       params = params.set('pageIndex', pageIndex);
       params = params.set('pageSize', pageSize);
     }
+    if (search) params = params.set('search', search);
+    if (brand) params = params.set('brands', brand);
+    if (type) params = params.set('types', type);
+    if (sort) params = params.set('sort', sort);
 
     return this.http.get<Pagination<Product>>(this.baseUrl + 'products', {
       params,

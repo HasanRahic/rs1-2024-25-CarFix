@@ -13,22 +13,24 @@ namespace API.Controllers;
 public class ProductsController(IGenericRepository<Product> repo, CloudinaryService cloudinaryService) : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts([FromQuery] ProductSpecParams specParams)
+    public async Task<ActionResult<Pagination<ProductDto>>> GetProducts([FromQuery] ProductSpecParams specParams)
     {
         var spec = new ProductSpecification(specParams);
-
-
-        return await CreatePagedResult(repo, spec, specParams.PageIndex, specParams.PageSize);
+        var products = await repo.ListAsync(spec);
+        var count = await repo.CountAsync(spec);
+        var dtos = products.Select(MapToDto).ToList();
+        var pagination = new Pagination<ProductDto>(specParams.PageIndex, specParams.PageSize, count, dtos);
+        return Ok(pagination);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Product>> GetProduct(int id)
+    public async Task<ActionResult<ProductDto>> GetProduct(int id)
     {
         var product = await repo.GetByIdAsync(id);
 
         if (product == null) return NotFound();
 
-        return product;
+        return MapToDto(product);
     }
 
     [HttpPost]
@@ -142,4 +144,16 @@ public class ProductsController(IGenericRepository<Product> repo, CloudinaryServ
     {
         return repo.Exists(id);
     }
+
+    private static ProductDto MapToDto(Product p) => new ProductDto
+    {
+        Id = p.Id,
+        Name = p.Name,
+        Description = p.Description,
+        Price = p.Price,
+        PictureUrl = p.PictureUrl ?? string.Empty,
+        Type = p.Type,
+        Brand = p.Brand,
+        QuantityInStock = p.QuantityInStock
+    };
 }

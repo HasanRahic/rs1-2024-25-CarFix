@@ -21,7 +21,7 @@ public class StoreContextSeed
             await context.SaveChangesAsync();
         }
 
-        if (!context.Products.Any())
+        if (!context.DeliveryMethods.Any())
         {
             var dmData = await File.ReadAllTextAsync("../Infrastructure/Data/SeedData/delivery.json");
 

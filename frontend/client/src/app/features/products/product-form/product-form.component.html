@@ -3,22 +3,52 @@
 
   <div class="space-y-1">
     <label class="block text-sm font-medium text-gray-700">Name</label>
-    <input formControlName="name" class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+    <input formControlName="name" class="w-full px-3 py-2 border rounded-md"
+      [class.border-red-500]="productForm.get('name')?.invalid && productForm.get('name')?.touched"
+      [class.border-gray-300]="!(productForm.get('name')?.invalid && productForm.get('name')?.touched)" />
+    <div *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched" class="text-red-500 text-xs mt-1">
+      <span *ngIf="productForm.get('name')?.errors?.['required']">Name is required.</span>
+    </div>
   </div>
 
   <div class="space-y-1">
     <label class="block text-sm font-medium text-gray-700">Description</label>
-    <input formControlName="description" class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+    <input formControlName="description" class="w-full px-3 py-2 border rounded-md"
+      [class.border-red-500]="productForm.get('description')?.invalid && productForm.get('description')?.touched"
+      [class.border-gray-300]="!(productForm.get('description')?.invalid && productForm.get('description')?.touched)" />
+    <div *ngIf="productForm.get('description')?.invalid && productForm.get('description')?.touched" class="text-red-500 text-xs mt-1">
+      <span *ngIf="productForm.get('description')?.errors?.['required']">Description is required.</span>
+    </div>
   </div>
 
   <div class="space-y-1">
     <label class="block text-sm font-medium text-gray-700">Price</label>
-    <input formControlName="price" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+    <input formControlName="price" type="number" class="w-full px-3 py-2 border rounded-md"
+      [class.border-red-500]="productForm.get('price')?.invalid && productForm.get('price')?.touched"
+      [class.border-gray-300]="!(productForm.get('price')?.invalid && productForm.get('price')?.touched)" />
+    <div *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched" class="text-red-500 text-xs mt-1">
+      <span *ngIf="productForm.get('price')?.errors?.['required']">Price is required.</span>
+    </div>
   </div>
 
   <div class="space-y-1">
     <label class="block text-sm font-medium text-gray-700">Picture</label>
-    <input type="file" (change)="onFileSelected($event)" />
+    <div
+      class="border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors"
+      [class.border-blue-400]="isDragging"
+      [class.bg-blue-50]="isDragging"
+      [class.border-gray-300]="!isDragging"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()">
+      <svg class="mx-auto h-8 w-8 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      <p class="text-sm text-gray-500">Drag &amp; drop an image here, or <span class="text-blue-500 underline">click to select</span></p>
+      <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
+    </div>
     <div *ngIf="previewUrl" class="mt-2">
       <img [src]="previewUrl" (error)="onImageError($event)" alt="Preview" class="h-24 rounded border" />
     </div>
@@ -26,17 +56,36 @@
 
   <div class="space-y-1">
     <label class="block text-sm font-medium text-gray-700">Type</label>
-    <input formControlName="type" class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+    <input formControlName="type" class="w-full px-3 py-2 border rounded-md"
+      [class.border-red-500]="productForm.get('type')?.invalid && productForm.get('type')?.touched"
+      [class.border-gray-300]="!(productForm.get('type')?.invalid && productForm.get('type')?.touched)" />
+    <div *ngIf="productForm.get('type')?.invalid && productForm.get('type')?.touched" class="text-red-500 text-xs mt-1">
+      <span *ngIf="productForm.get('type')?.errors?.['required']">Type is required.</span>
+    </div>
   </div>
 
   <div class="space-y-1">
     <label class="block text-sm font-medium text-gray-700">Brand</label>
-    <input formControlName="brand" class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+    <input formControlName="brand" class="w-full px-3 py-2 border rounded-md"
+      [class.border-red-500]="productForm.get('brand')?.invalid && productForm.get('brand')?.touched"
+      [class.border-gray-300]="!(productForm.get('brand')?.invalid && productForm.get('brand')?.touched)" />
+    <div *ngIf="productForm.get('brand')?.invalid && productForm.get('brand')?.touched" class="text-red-500 text-xs mt-1">
+      <span *ngIf="productForm.get('brand')?.errors?.['required']">Brand is required.</span>
+    </div>
   </div>
 
   <div class="space-y-1">
     <label class="block text-sm font-medium text-gray-700">Quantity In Stock</label>
-    <input formControlName="quantityInStock" type="number" class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+    <input formControlName="quantityInStock" type="number" class="w-full px-3 py-2 border rounded-md"
+      [class.border-red-500]="productForm.get('quantityInStock')?.invalid && productForm.get('quantityInStock')?.touched"
+      [class.border-gray-300]="!(productForm.get('quantityInStock')?.invalid && productForm.get('quantityInStock')?.touched)" />
+    <div *ngIf="productForm.get('quantityInStock')?.invalid && productForm.get('quantityInStock')?.touched" class="text-red-500 text-xs mt-1">
+      <span *ngIf="productForm.get('quantityInStock')?.errors?.['required']">Quantity is required.</span>
+    </div>
+  </div>
+
+  <div *ngIf="productForm.invalid && productForm.touched" class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-md p-2">
+    Please fill in all required fields before submitting.
   </div>
 
   <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
