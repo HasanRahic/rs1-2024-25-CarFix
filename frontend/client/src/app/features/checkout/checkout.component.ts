@@ -156,11 +156,35 @@ export class CheckoutComponent implements OnInit {
     }
 
     const cart = this.cartService.cart();
-    if (cart) {
-      this.http.delete(environment.apiUrl + 'cart?id=' + cart.id).subscribe();
-      this.cartService.cart.set(null);
+    if (!cart) {
+      this.isSubmitting = false;
+      return;
     }
-    this.isSubmitting = false;
-    this.currentStep = 4;
+
+    const orderData = {
+      cartId: cart.id,
+      deliveryMethodId: this.selectedDeliveryMethod!.id,
+      shipToAddress: {
+        firstName: this.addressForm.value.firstName,
+        lastName: this.addressForm.value.lastName,
+        street: this.addressForm.value.street,
+        city: this.addressForm.value.city,
+        state: this.addressForm.value.state,
+        postalCode: this.addressForm.value.postalCode
+      }
+    };
+
+    this.http.post(environment.apiUrl + 'orders', orderData).subscribe({
+      next: () => {
+        this.cartService.cart.set(null);
+        this.isSubmitting = false;
+        this.currentStep = 4;
+      },
+      error: (err) => {
+        console.error('Greška pri kreiranju narudžbe:', err);
+        this.paymentError = 'Plaćanje je uspjelo, ali narudžba nije kreirana. Kontaktirajte podršku.';
+        this.isSubmitting = false;
+      }
+    });
   }
 }
