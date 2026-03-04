@@ -24,11 +24,12 @@ export const routes: Routes = [
   { path: 'account/register', component: RegisterComponent },
   { 
     path: 'products', 
+    canActivate: [authGuard],
     children: [
       { path: '', component: ProductListComponent },
       { path: 'create', component: ProductFormComponent },
       { path: ':id', component: ProductListComponent },
-      { path: 'edit/:id', component: ProductFormComponent } // Dodajte ovo
+      { path: 'edit/:id', component: ProductFormComponent }
     ]
   },
   { path: '**', redirectTo: '', pathMatch: 'full' },
