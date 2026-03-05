@@ -1,11 +1,14 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { ShopService } from '../../core/services/shop.service';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { Product } from '../../shared/models/product';
 import { ShopParams } from '../../shared/models/shopParams';
 import { MatCard, MatCardContent } from '@angular/material/card';
 import { FormsModule } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -15,6 +18,8 @@ import { FormsModule } from '@angular/forms';
 })
 export class HomeComponent {
   private shopService = inject(ShopService);
+  private http = inject(HttpClient);
+  private snackBar = inject(MatSnackBar);
   products: Product[] = [];
 
   get types(): string[] {
@@ -42,7 +47,7 @@ export class HomeComponent {
 
     this.shopService.getProducts(params).subscribe({
       next: (resp: any) => (this.products = resp?.data ?? []),
-      error: (err) => console.error(err),
+      error: () => {},
     });
   }
 
@@ -51,14 +56,23 @@ export class HomeComponent {
   message = '';
 
   onSubmit(form: any) {
-    console.log('Slanje poruke:', {
+    if (!this.fullName || !this.email || !this.message) {
+      this.snackBar.open('Molimo popunite sva polja.', 'OK', { duration: 3000 });
+      return;
+    }
+
+    this.http.post(environment.apiUrl + 'contact', {
       fullName: this.fullName,
       email: this.email,
-      message: this.message,
+      message: this.message
+    }).subscribe({
+      next: () => {
+        this.snackBar.open('Poruka je uspje\u0161no poslana!', 'OK', { duration: 3000 });
+        form.resetForm();
+      },
+      error: () => {
+        this.snackBar.open('Gre\u0161ka pri slanju poruke. Poku\u0161ajte ponovo.', 'Zatvori', { duration: 4000 });
+      }
     });
-
-    form.resetForm();
-
-    alert('Poruka je poslana! 💬');
   }
 }

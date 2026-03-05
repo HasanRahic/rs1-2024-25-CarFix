@@ -28,13 +28,13 @@ public class ProductsController(IGenericRepository<Product> repo, CloudinaryServ
     {
         var product = await repo.GetByIdAsync(id);
 
-        if (product == null) return NotFound();
+        if (product == null || product.IsDeleted) return NotFound();
 
         return MapToDto(product);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Product>> CreateProduct([FromForm] CreateProductDto dto)
+    public async Task<ActionResult<ProductDto>> CreateProduct([FromForm] CreateProductDto dto)
     {
         var product = new Product
         {
@@ -61,7 +61,7 @@ public class ProductsController(IGenericRepository<Product> repo, CloudinaryServ
 
         if (await repo.SaveAllAsync())
         {
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            return CreatedAtAction("GetProduct", new { id = product.Id }, MapToDto(product));
         }
 
         return BadRequest("Problem creating product");
@@ -72,9 +72,9 @@ public class ProductsController(IGenericRepository<Product> repo, CloudinaryServ
     {
         var product = await repo.GetByIdAsync(id);
 
-        if (product == null) return NotFound();
+        if (product == null || product.IsDeleted) return NotFound();
 
-        repo.Remove(product);
+        product.IsDeleted = true;
 
         if (await repo.SaveAllAsync())
         {
@@ -104,7 +104,7 @@ public class ProductsController(IGenericRepository<Product> repo, CloudinaryServ
     public async Task<ActionResult> UpdateProduct(int id, [FromBody] UpdateProductDto dto)
     {
         var product = await repo.GetByIdAsync(id);
-        if (product == null) return NotFound();
+        if (product == null || product.IsDeleted) return NotFound();
 
         product.Name = dto.Name;
         product.Description = dto.Description;

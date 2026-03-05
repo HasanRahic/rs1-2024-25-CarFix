@@ -48,6 +48,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["JwtSettings:Audience"],
             ValidateLifetime = true
         };
+        // Read JWT token from httpOnly cookie instead of Authorization header
+        options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["access_token"];
+                return Task.CompletedTask;
+            }
+        };
     });
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityCore<AppUser>()

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { Address, User } from '../../shared/models/user';
-import { map, tap } from 'rxjs';
+import { map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -14,14 +14,9 @@ export class AccountService {
 
   login(values: any) {
     return this.http
-      .post<{ token: string }>(this.baseUrl + 'account/login', values)
+      .post<{ message: string }>(this.baseUrl + 'account/login', values, { withCredentials: true })
       .pipe(
-        tap((res) => {
-          if (res?.token) {
-            localStorage.setItem('token', res.token);
-          }
-        }),
-        // after storing token, fetch full user info
+        // Token is stored in httpOnly cookie by the server — no localStorage
         map(() => null)
       );
   }
@@ -40,9 +35,8 @@ export class AccountService {
   }
 
   logout() {
-    localStorage.removeItem('token');
     this.currentUser.set(null);
-    return this.http.post(this.baseUrl + 'account/logout', {});
+    return this.http.post(this.baseUrl + 'account/logout', {}, { withCredentials: true });
   }
 
   updateAddress(address: Address) {

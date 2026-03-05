@@ -6,7 +6,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Pagination } from '../../../shared/models/pagination';
 import { TruncatePipe } from '../../../shared/pipes/truncate.pipe';
 import { FormsModule } from '@angular/forms';
-import { Subject, debounceTime, takeUntil }  from 'rxjs';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-product-list',
@@ -19,6 +21,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private dialog = inject(MatDialog);
 
   currentPage = 1;
   itemsPerPage = 6;
@@ -123,7 +126,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
           this.totalItems = response.count;
           this.updatePaginationInfo();
         },
-        error: (err) => console.error(err),
+        error: () => {},
       });
   }
 
@@ -212,19 +215,30 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   deleteProduct(id: number) {
-    if (confirm('Are you sure you want to delete this product?')) {
-      this.productService.deleteProduct(id).subscribe({
-        next: () => {
-          this.products = this.products.filter((p) => p.id !== id);
-          this.totalItems--;
-          this.updatePaginationInfo();
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete Product',
+        message: 'Are you sure you want to delete this product? This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      },
+    });
 
-          if (this.products.length === 0 && this.currentPage > 1) {
-            this.currentPage--;
-            this.loadProducts();
-          }
-        },
-      });
-    }
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.productService.deleteProduct(id).subscribe({
+          next: () => {
+            this.products = this.products.filter((p) => p.id !== id);
+            this.totalItems--;
+            this.updatePaginationInfo();
+
+            if (this.products.length === 0 && this.currentPage > 1) {
+              this.currentPage--;
+              this.loadProducts();
+            }
+          },
+        });
+      }
+    });
   }
 }

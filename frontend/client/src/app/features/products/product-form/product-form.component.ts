@@ -9,10 +9,12 @@ import { ProductService } from '../../../core/services/product.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../../shared/models/product';
 import { CommonModule } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-product-form',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, MatSnackBarModule],
   templateUrl: './product-form.component.html',
   styleUrl: './product-form.component.scss',
 })
@@ -31,6 +33,7 @@ export class ProductFormComponent implements OnInit {
   private productService = inject(ProductService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private snackBar = inject(MatSnackBar);
 
   ngOnInit(): void {
     this.productId = this.route.snapshot.params['id'];
@@ -49,10 +52,10 @@ export class ProductFormComponent implements OnInit {
     this.productForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
-      price: [0, Validators.required],
+      price: [null, [Validators.required, Validators.min(0.01)]],
       type: ['', Validators.required],
       brand: ['', Validators.required],
-      quantityInStock: [0, Validators.required],
+      quantityInStock: [null, [Validators.required, Validators.min(1)]],
       pictureUrl: [''],
     });
   }
@@ -166,7 +169,13 @@ export class ProductFormComponent implements OnInit {
     } else {
       this.productService.createProduct(product, this.selectedFile).subscribe({
         next: () => this.router.navigate(['/products']),
-        error: (err) => console.error('Greška prilikom kreiranja:', err),
+        error: (err) => {
+          console.error('Greška prilikom kreiranja:', err);
+          const message = err?.error?.errors
+            ? Object.values(err.error.errors).flat().join(' ')
+            : (err?.error?.message ?? 'Greška prilikom kreiranja proizvoda.');
+          this.snackBar.open(message, 'Zatvori', { duration: 5000 });
+        },
       });
     }
   }

@@ -4,19 +4,10 @@ import { Router, RouterLink } from '@angular/router';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { CartService } from '../../core/services/cart.service';
 import { AccountService } from '../../core/services/account.service';
-import { HttpClient } from '@angular/common/http';
+import { CheckoutService, DeliveryMethod } from '../../core/services/checkout.service';
 import { environment } from '../../../environments/environment';
 import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
 import { firstValueFrom } from 'rxjs';
-import { CartType } from '../../shared/models/cart';
-
-type DeliveryMethod = {
-  id: number;
-  shortName: string;
-  deliveryTime: string;
-  description: string;
-  price: number;
-};
 
 @Component({
   selector: 'app-checkout',
@@ -28,8 +19,8 @@ export class CheckoutComponent implements OnInit {
   private fb = inject(FormBuilder);
   cartService = inject(CartService);
   private accountService = inject(AccountService);
+  private checkoutService = inject(CheckoutService);
   private router = inject(Router);
-  private http = inject(HttpClient);
 
   currentStep = 1; // 1=Address, 2=Delivery, 3=Payment, 4=Success
   deliveryMethods: DeliveryMethod[] = [];
@@ -71,7 +62,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   loadDeliveryMethods() {
-    this.http.get<DeliveryMethod[]>(environment.apiUrl + 'payments/delivery-methods').subscribe({
+    this.checkoutService.getDeliveryMethods().subscribe({
       next: methods => this.deliveryMethods = methods,
       error: () => {
         // Fallback if endpoint doesn't exist yet
@@ -120,7 +111,7 @@ export class CheckoutComponent implements OnInit {
 
     try {
       const updatedCart = await firstValueFrom(
-        this.http.post<CartType>(environment.apiUrl + 'payments/' + cart.id, {})
+        this.checkoutService.createOrUpdatePaymentIntent(cart.id)
       );
       if (!updatedCart.clientSecret) return;
 
@@ -174,7 +165,7 @@ export class CheckoutComponent implements OnInit {
       }
     };
 
-    this.http.post(environment.apiUrl + 'orders', orderData).subscribe({
+    this.checkoutService.createOrder(orderData).subscribe({
       next: () => {
         this.cartService.cart.set(null);
         this.isSubmitting = false;

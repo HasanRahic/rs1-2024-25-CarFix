@@ -23,7 +23,16 @@ public class AccountController(UserManager<AppUser> userManager, SignInManager<A
         if (!result.Succeeded) return Unauthorized("Invalid email or password");
 
         var token = await tokenService.GenerateToken(user);
-        return Ok(new { token });
+
+        Response.Cookies.Append("access_token", token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTimeOffset.UtcNow.AddDays(7)
+        });
+
+        return Ok(new { message = "Logged in successfully" });
     }
 
     [HttpPost("register")]
@@ -56,7 +65,7 @@ public class AccountController(UserManager<AppUser> userManager, SignInManager<A
     [HttpPost("logout")]
     public ActionResult Logout()
     {
-        // JWT is stateless — client deletes the token
+        Response.Cookies.Delete("access_token");
         return NoContent();
     }
 

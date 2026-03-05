@@ -28,6 +28,7 @@
       [class.border-gray-300]="!(productForm.get('price')?.invalid && productForm.get('price')?.touched)" />
     <div *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched" class="text-red-500 text-xs mt-1">
       <span *ngIf="productForm.get('price')?.errors?.['required']">Price is required.</span>
+      <span *ngIf="productForm.get('price')?.errors?.['min']">Price must be greater than 0.</span>
     </div>
   </div>
 
@@ -81,6 +82,7 @@
       [class.border-gray-300]="!(productForm.get('quantityInStock')?.invalid && productForm.get('quantityInStock')?.touched)" />
     <div *ngIf="productForm.get('quantityInStock')?.invalid && productForm.get('quantityInStock')?.touched" class="text-red-500 text-xs mt-1">
       <span *ngIf="productForm.get('quantityInStock')?.errors?.['required']">Quantity is required.</span>
+      <span *ngIf="productForm.get('quantityInStock')?.errors?.['min']">Quantity must be at least 1.</span>
     </div>
   </div>
 
