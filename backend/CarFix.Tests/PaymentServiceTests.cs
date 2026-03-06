@@ -1,6 +1,9 @@
 using Core.Entities;
 using Core.Interfaces;
+using Infrastructure.Data;
 using Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
@@ -13,6 +16,8 @@ public class PaymentServiceTests
     private readonly Mock<ICartService> _cartServiceMock;
     private readonly Mock<IGenericRepository<Product>> _productRepoMock;
     private readonly Mock<IGenericRepository<DeliveryMethod>> _dmRepoMock;
+    private readonly StoreContext _dbContext;
+    private readonly Mock<UserManager<AppUser>> _userManagerMock;
     private readonly PaymentService _paymentService;
 
     public PaymentServiceTests()
@@ -24,11 +29,22 @@ public class PaymentServiceTests
         _productRepoMock = new Mock<IGenericRepository<Product>>();
         _dmRepoMock = new Mock<IGenericRepository<DeliveryMethod>>();
 
+        var options = new DbContextOptionsBuilder<StoreContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+        _dbContext = new StoreContext(options);
+
+        var userStoreMock = new Mock<IUserStore<AppUser>>();
+        _userManagerMock = new Mock<UserManager<AppUser>>(
+            userStoreMock.Object, null, null, null, null, null, null, null, null);
+
         _paymentService = new PaymentService(
             _configMock.Object,
             _cartServiceMock.Object,
             _productRepoMock.Object,
-            _dmRepoMock.Object);
+            _dmRepoMock.Object,
+            _dbContext,
+            _userManagerMock.Object);
     }
 
     [Fact]

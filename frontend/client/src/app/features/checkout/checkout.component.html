@@ -83,10 +83,15 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Poštanski broj *</label>
           <input formControlName="postalCode" type="text"
+            inputmode="numeric" pattern="[0-9]*"
+            (keypress)="onPostalCodeKeypress($event)"
             [class]="'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ' +
               (addressForm.get('postalCode')?.invalid && addressForm.get('postalCode')?.touched ? 'border-red-500' : 'border-gray-300')">
           @if (addressForm.get('postalCode')?.invalid && addressForm.get('postalCode')?.touched) {
-            <p class="text-red-500 text-xs mt-1">Poštanski broj je obavezan.</p>
+            <p class="text-red-500 text-xs mt-1">
+              @if (addressForm.get('postalCode')?.hasError('required')) { Poštanski broj je obavezan. }
+              @else { Poštanski broj smije sadržavati samo cifre. }
+            </p>
           }
         </div>
       </form>
@@ -211,18 +216,92 @@
   }
 
   <!-- STEP 4: SUCCESS -->
-  @if (currentStep === 4) {
-    <div class="bg-white rounded-lg shadow p-10 text-center">
-      <div class="text-green-500 text-6xl mb-4">✓</div>
-      <h2 class="text-2xl font-bold text-gray-800 mb-2">Narudžba potvrđena!</h2>
-      <p class="text-gray-500 mb-6">Hvala vam na kupovini. Vaša narudžba je uspješno zaprimljena.</p>
-      <div class="flex justify-center gap-4">
-        <a routerLink="/shop" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          Nastavi kupovinu
-        </a>
-        <a routerLink="/" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
-          Početna
-        </a>
+  @if (currentStep === 4 && completedOrder) {
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+
+      <!-- Receipt header -->
+      <div class="bg-green-50 border-b border-green-100 px-8 py-6 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-4">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-1">Hvala vam na kupovini!</h2>
+        <p class="text-gray-500 text-sm">
+          Narudžba <span class="font-semibold text-gray-700">#{{completedOrder.id}}</span>
+          &nbsp;·&nbsp;
+          {{completedOrder.orderDate | date:'d. M. yyyy. HH:mm'}}
+        </p>
+      </div>
+
+      <div class="px-8 py-6 space-y-6">
+
+        <!-- Ordered items -->
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Naručeni artikli</h3>
+          <div class="divide-y divide-gray-100">
+            @for (item of completedOrder.items; track item.productName) {
+              <div class="flex items-center gap-4 py-3">
+                <img [src]="item.pictureUrl" [alt]="item.productName"
+                  class="w-14 h-14 object-cover rounded-lg border border-gray-100 flex-shrink-0">
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-gray-800 truncate">{{item.productName}}</p>
+                  <p class="text-sm text-gray-500">Količina: {{item.quantity}}</p>
+                </div>
+                <p class="font-semibold text-gray-800 flex-shrink-0">
+                  {{item.price * item.quantity | currency:'EUR'}}
+                </p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Price breakdown + delivery address side by side -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Totals -->
+          <div class="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+            <h3 class="font-semibold text-gray-500 uppercase tracking-wide text-xs mb-3">Rekapitulacija</h3>
+            <div class="flex justify-between text-gray-600">
+              <span>Cijena artikala</span>
+              <span>{{completedOrder.subtotal | currency:'EUR'}}</span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+              <span>Dostava ({{completedOrder.deliveryMethodName}})</span>
+              <span>{{completedOrder.deliveryPrice | currency:'EUR'}}</span>
+            </div>
+            <div class="flex justify-between font-bold text-gray-800 border-t pt-2 mt-2 text-base">
+              <span>Ukupno</span>
+              <span class="text-green-600">{{completedOrder.total | currency:'EUR'}}</span>
+            </div>
+          </div>
+
+          <!-- Delivery address -->
+          <div class="bg-gray-50 rounded-lg p-4 text-sm">
+            <h3 class="font-semibold text-gray-500 uppercase tracking-wide text-xs mb-3">Adresa dostave</h3>
+            <p class="font-medium text-gray-800">
+              {{completedOrder.shipToAddress.firstName}} {{completedOrder.shipToAddress.lastName}}
+            </p>
+            <p class="text-gray-600">{{completedOrder.shipToAddress.street}}</p>
+            <p class="text-gray-600">
+              {{completedOrder.shipToAddress.postalCode}} {{completedOrder.shipToAddress.city}},
+              {{completedOrder.shipToAddress.state}}
+            </p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+          <a routerLink="/shop"
+            class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-center">
+            Nastavi kupovinu
+          </a>
+          <a routerLink="/"
+            class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium text-center">
+            Početna
+          </a>
+        </div>
+
       </div>
     </div>
   }

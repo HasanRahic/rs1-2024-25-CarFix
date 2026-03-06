@@ -8,10 +8,26 @@
             <a routerLink="/products" routerLinkActive="active">Products(admin)</a>
             <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
         </nav>
-        <div class="flex gap-3 align-middle">
-            <a routerLink="/cart" routerLinkActive="active" matBadge="{{cartService.itemCount()}}" matBadgeSize="large" class="custom-badge mt-2 mr-2">
+        <div class="flex gap-3 items-center">
+
+            <!-- Notification bell (only when logged in) -->
+            @if (accountService.currentUser()) {
+              <button mat-icon-button [matMenuTriggerFor]="notifMenu"
+                      (menuOpened)="notificationService.markAllAsRead()"
+                      [matBadge]="notificationService.unreadCount() > 0 ? notificationService.unreadCount() : null"
+                      matBadgeColor="warn" matBadgeSize="small"
+                      class="flex items-center justify-center">
+                <mat-icon class="text-2xl leading-none pb-1">notifications</mat-icon>
+              </button>
+            }
+
+            <!-- Cart -->
+            <a routerLink="/cart" routerLinkActive="active"
+               [matBadge]="cartService.itemCount()" matBadgeSize="large"
+               class="custom-badge mt-2 mr-2">
                 <mat-icon>shopping_cart</mat-icon>
             </a>
+
             @if (accountService.currentUser()) {
                 <button mat-button [matMenuTriggerFor]="menu">
                     <mat-icon>arrow_drop_down</mat-icon>
@@ -23,9 +39,32 @@
             }
         </div>
     </div>
-
 </header>
 
+<!-- Notification dropdown -->
+<mat-menu #notifMenu="matMenu" class="notif-menu">
+  @if (notificationService.notifications().length === 0) {
+    <div class="px-4 py-3 text-sm text-gray-500">Nema novih obavještenja.</div>
+  } @else {
+    @for (n of notificationService.notifications(); track n.id) {
+      <div class="px-4 py-3 border-b last:border-b-0 w-full"
+           [class.bg-blue-50]="!n.isRead">
+        <div class="flex justify-between items-start gap-2">
+          <div>
+            <p class="font-semibold text-sm" [class.text-blue-700]="!n.isRead">{{n.title}}</p>
+            <p class="text-sm text-gray-600 mt-0.5">{{n.message}}</p>
+          </div>
+          @if (!n.isRead) {
+            <span class="mt-1 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></span>
+          }
+        </div>
+        <p class="text-xs text-gray-400 mt-1">{{n.createdAt | date:'d.M.yyyy. HH:mm'}}</p>
+      </div>
+    }
+  }
+</mat-menu>
+
+<!-- User menu -->
 <mat-menu #menu="matMenu" class="px-3">
     <button mat-menu-item class="px-3">
         <mat-icon>shopping_cart</mat-icon>

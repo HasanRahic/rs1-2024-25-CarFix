@@ -1,17 +1,38 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { CartService } from '../../core/services/cart.service';
 import { AccountService } from '../../core/services/account.service';
 import { CheckoutService, DeliveryMethod } from '../../core/services/checkout.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { environment } from '../../../environments/environment';
 import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
 import { firstValueFrom } from 'rxjs';
 
+export type OrderReceiptItem = {
+  productName: string;
+  pictureUrl: string;
+  price: number;
+  quantity: number;
+};
+
+export type OrderReceipt = {
+  id: number;
+  orderDate: string;
+  subtotal: number;
+  deliveryPrice: number;
+  deliveryMethodName: string;
+  total: number;
+  items: OrderReceiptItem[];
+  shipToAddress: {
+    firstName: string; lastName: string;
+    street: string; city: string; state: string; postalCode: string;
+  };
+};
 @Component({
   selector: 'app-checkout',
-  imports: [ReactiveFormsModule, CommonModule, CurrencyPipe, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, CurrencyPipe, DatePipe, RouterLink],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss'
 })
@@ -20,6 +41,7 @@ export class CheckoutComponent implements OnInit {
   cartService = inject(CartService);
   private accountService = inject(AccountService);
   private checkoutService = inject(CheckoutService);
+  private notificationService = inject(NotificationService);
   private router = inject(Router);
 
   currentStep = 1; // 1=Address, 2=Delivery, 3=Payment, 4=Success
@@ -27,6 +49,7 @@ export class CheckoutComponent implements OnInit {
   selectedDeliveryMethod: DeliveryMethod | null = null;
   isSubmitting = false;
   paymentError: string | null = null;
+  completedOrder: OrderReceipt | null = null;
 
   private stripe: Stripe | null = null;
   private elements: StripeElements | null = null;
@@ -40,7 +63,7 @@ export class CheckoutComponent implements OnInit {
       street: ['', Validators.required],
       city: ['', Validators.required],
       state: ['', Validators.required],
-      postalCode: ['', Validators.required],
+      postalCode: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
     });
 
     this.loadDeliveryMethods();
@@ -110,8 +133,13 @@ export class CheckoutComponent implements OnInit {
     if (!cart) return;
 
     try {
+      // Re-sync the cart to Redis before creating/updating the payment intent.
+      // This prevents a 400 if the backend was restarted and Redis lost the cart data
+      // while the browser tab remained open with a stale in-memory cart.
+      const syncedCart = await firstValueFrom(this.cartService.syncCart(cart));
+
       const updatedCart = await firstValueFrom(
-        this.checkoutService.createOrUpdatePaymentIntent(cart.id)
+        this.checkoutService.createOrUpdatePaymentIntent(syncedCart.id)
       );
       if (!updatedCart.clientSecret) return;
 
@@ -119,15 +147,22 @@ export class CheckoutComponent implements OnInit {
       if (!this.stripe) return;
 
       this.elements = this.stripe.elements({ clientSecret: updatedCart.clientSecret });
-      const paymentElement = this.elements.create('payment');
+      const paymentElement = this.elements.create('payment', {
+        paymentMethodOrder: ['card'],
+        wallets: { applePay: 'never', googlePay: 'never' }
+      });
       paymentElement.mount('#payment-element');
-    } catch (err) {
-      console.error('Stripe init error:', err);
+    } catch (err: any) {
+      this.paymentError = err?.message ?? 'Greška pri inicijalizaciji platnog sustava.';
     }
   }
 
   prevStep() {
     if (this.currentStep > 1) this.currentStep--;
+  }
+
+  onPostalCodeKeypress(event: KeyboardEvent): boolean {
+    return /\d/.test(event.key);
   }
 
   async placeOrder() {
@@ -166,13 +201,14 @@ export class CheckoutComponent implements OnInit {
     };
 
     this.checkoutService.createOrder(orderData).subscribe({
-      next: () => {
+      next: (order: any) => {
+        this.completedOrder = order as OrderReceipt;
         this.cartService.cart.set(null);
+        this.notificationService.load();
         this.isSubmitting = false;
         this.currentStep = 4;
       },
       error: (err) => {
-        console.error('Greška pri kreiranju narudžbe:', err);
         this.paymentError = 'Plaćanje je uspjelo, ali narudžba nije kreirana. Kontaktirajte podršku.';
         this.isSubmitting = false;
       }

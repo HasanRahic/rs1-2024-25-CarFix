@@ -3,7 +3,7 @@ import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Cart, CartItem } from '../../shared/models/cart';
 import { Product } from '../../shared/models/product';
-import { map } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -41,6 +41,13 @@ export class CartService {
     return this.http.post<Cart>(this.baseUrl + 'cart', cart).subscribe({
       next: cart => this.cart.set(cart)
     })
+  }
+
+  // Returns a hot observable so callers can await the round-trip to Redis.
+  syncCart(cart: Cart): Observable<Cart> {
+    return this.http.post<Cart>(this.baseUrl + 'cart', cart).pipe(
+      tap(updated => this.cart.set(updated))
+    );
   }
 
   addItemToCart(item: CartItem | Product, quantity = 1){

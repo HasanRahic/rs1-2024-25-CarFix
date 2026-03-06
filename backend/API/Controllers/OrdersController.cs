@@ -50,11 +50,39 @@ public class OrdersController(StoreContext context, ICartService cartService) : 
             OrderItems = items,
             Subtotal = subtotal,
             PaymentIntentId = cart.PaymentIntentId,
-            Status = OrderStatus.PaymentReceived
+            Status = OrderStatus.Pending
         };
 
         context.Orders.Add(order);
         await context.SaveChangesAsync();
+
+        // Frontend reaches here only after stripe.confirmPayment() succeeded.
+        // Fulfill directly on the already-tracked entities — avoids re-querying
+        // the same EF Core context that just saved the order.
+        if (!string.IsNullOrEmpty(order.PaymentIntentId))
+        {
+            order.Status = OrderStatus.PaymentReceived;
+
+            foreach (var item in order.OrderItems)
+            {
+                var product = await context.Products.FindAsync(item.ProductId);
+                if (product != null)
+                    product.QuantityInStock = Math.Max(0, product.QuantityInStock - item.Quantity);
+            }
+
+            var buyer = await context.Users.FirstOrDefaultAsync(u => u.Email == order.BuyerEmail);
+            if (buyer != null)
+            {
+                context.Notifications.Add(new Notification
+                {
+                    UserId = buyer.Id,
+                    Title = "Narudžba potvrđena",
+                    Message = $"Vaša narudžba #{order.Id} je uspješno plaćena i u obradi."
+                });
+            }
+
+            await context.SaveChangesAsync();
+        }
 
         await cartService.DeleteCartAsync(orderDto.CartId);
 
@@ -66,8 +94,25 @@ public class OrdersController(StoreContext context, ICartService cartService) : 
             Status = order.Status.ToString(),
             Subtotal = order.Subtotal,
             DeliveryPrice = deliveryMethod.Price,
+            DeliveryMethodName = deliveryMethod.ShortName,
             Total = order.Subtotal + deliveryMethod.Price,
-            PaymentIntentId = order.PaymentIntentId
+            PaymentIntentId = order.PaymentIntentId,
+            Items = order.OrderItems.Select(i => new OrderItemDto
+            {
+                ProductName = i.ProductName,
+                PictureUrl = i.PictureUrl,
+                Price = i.Price,
+                Quantity = i.Quantity
+            }).ToList(),
+            ShipToAddress = new ShipToAddressDto
+            {
+                FirstName = order.ShipToAddress.FirstName,
+                LastName = order.ShipToAddress.LastName,
+                Street = order.ShipToAddress.Street,
+                City = order.ShipToAddress.City,
+                State = order.ShipToAddress.State,
+                PostalCode = order.ShipToAddress.PostalCode
+            }
         });
     }
 

@@ -9,12 +9,11 @@ import { ProductService } from '../../../core/services/product.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../../shared/models/product';
 import { CommonModule } from '@angular/common';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { SnackbarService } from '../../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-product-form',
-  imports: [ReactiveFormsModule, CommonModule, MatSnackBarModule],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './product-form.component.html',
   styleUrl: './product-form.component.scss',
 })
@@ -33,7 +32,7 @@ export class ProductFormComponent implements OnInit {
   private productService = inject(ProductService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private snackBar = inject(MatSnackBar);
+  private snackbarService = inject(SnackbarService);
 
   ngOnInit(): void {
     this.productId = this.route.snapshot.params['id'];
@@ -121,7 +120,7 @@ export class ProductFormComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Error loading product:', err);
+        this.snackbarService.error('Greška pri učitavanju proizvoda.');
         this.router.navigate(['/products']);
       },
     });
@@ -151,7 +150,7 @@ export class ProductFormComponent implements OnInit {
                     skipLocationChange: true,
                   }),
                 error: (err) =>
-                  console.error('Greška prilikom ažuriranja slike:', err),
+                  this.snackbarService.error('Greška pri ažuriranju slike.'),
               });
           } else {
             this.router.navigate(['/products'], {
@@ -164,24 +163,22 @@ export class ProductFormComponent implements OnInit {
           }
         },
         error: (err) =>
-          console.error('Greška prilikom ažuriranja podataka:', err),
+          this.snackbarService.error('Greška pri ažuriranju podataka.'),
       });
     } else {
       this.productService.createProduct(product, this.selectedFile).subscribe({
         next: () => this.router.navigate(['/products']),
         error: (err) => {
-          console.error('Greška prilikom kreiranja:', err);
           const message = err?.error?.errors
             ? Object.values(err.error.errors).flat().join(' ')
             : (err?.error?.message ?? 'Greška prilikom kreiranja proizvoda.');
-          this.snackBar.open(message, 'Zatvori', { duration: 5000 });
+          this.snackbarService.error(message);
         },
       });
     }
   }
 
   onImageError(event: Event) {
-    console.error('Image failed to load:', this.previewUrl);
     this.previewUrl =
       'https://res.cloudinary.com/dgr65fixz/image/upload/v1761391917/products/u0etewaxj3sdckqfrczj.jpg';
   }

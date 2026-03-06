@@ -1,5 +1,21 @@
 @use '@angular/material' as mat;
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Prevent CDK overlay panels (mat-menu, mat-dialog etc.) from causing horizontal scroll */
+.cdk-overlay-container {
+  overflow: hidden;
+}
+
+/* Notification panel — constrain to viewport width so it never pushes past the right edge */
+.notif-menu .mat-mdc-menu-panel {
+  max-width: min(340px, calc(100vw - 24px)) !important;
+  overflow-x: hidden !important;
+}
+
 // Customize the entire app. Change :root to your selector if you want to scope the styles.
 :root {
   @include mat.badge-overrides((

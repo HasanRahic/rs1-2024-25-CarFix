@@ -10,6 +10,7 @@ import { MatInput } from '@angular/material/input';
 import { MatDivider } from '@angular/material/divider';
 import { CartService } from '../../../core/services/cart.service';
 import { FormsModule } from '@angular/forms';
+import { SnackbarService } from '../../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-product-details',
@@ -21,6 +22,7 @@ export class ProductDetailsComponent implements OnInit {
   private shopService = inject(ShopService);
   private activatedRoute = inject(ActivatedRoute);
   private cartService = inject(CartService);
+  private snackbarService = inject(SnackbarService);
   product?: Product;
   quantityInCart=0;
   quantity = 1;
@@ -38,7 +40,7 @@ export class ProductDetailsComponent implements OnInit {
         this.product = product;
         this.updateQuantityInCart();
       },
-      error: error => console.log(error)
+      error: () => this.snackbarService.error('Greška pri učitavanju proizvoda.')
     })
   }
 
