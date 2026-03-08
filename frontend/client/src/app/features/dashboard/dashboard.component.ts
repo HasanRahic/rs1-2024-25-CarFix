@@ -1,12 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { ShopService } from '../../core/services/shop.service';
 import { CartService } from '../../core/services/cart.service';
 import { AccountService } from '../../core/services/account.service';
+import { OrderService } from '../../core/services/order.service';
 import { ShopParams } from '../../shared/models/shopParams';
 import { MatCard, MatCardContent, MatCardTitle } from '@angular/material/card';
 import { CurrencyPipe } from '@angular/common';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,7 +15,7 @@ import { environment } from '../../../environments/environment';
 })
 export class DashboardComponent {
   private shopService = inject(ShopService);
-  private http = inject(HttpClient);
+  private orderService = inject(OrderService);
   cartService = inject(CartService);
   accountService = inject(AccountService);
 
@@ -33,7 +32,7 @@ export class DashboardComponent {
       error: () => {}
     });
 
-    this.http.get<any[]>(environment.apiUrl + 'orders').subscribe({
+    this.orderService.getOrders().subscribe({
       next: orders => this.totalOrders = orders.length,
       error: () => {}
     });

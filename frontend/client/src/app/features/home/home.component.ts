@@ -1,14 +1,12 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { ShopService } from '../../core/services/shop.service';
+import { ContactService } from '../../core/services/contact.service';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../shared/models/product';
 import { ShopParams } from '../../shared/models/shopParams';
-import { MatCard, MatCardContent } from '@angular/material/card';
 import { FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -18,7 +16,7 @@ import { environment } from '../../../environments/environment';
 })
 export class HomeComponent {
   private shopService = inject(ShopService);
-  private http = inject(HttpClient);
+  private contactService = inject(ContactService);
   private snackBar = inject(MatSnackBar);
   products: Product[] = [];
 
@@ -61,7 +59,7 @@ export class HomeComponent {
       return;
     }
 
-    this.http.post(environment.apiUrl + 'contact', {
+    this.contactService.sendMessage({
       fullName: this.fullName,
       email: this.email,
       message: this.message

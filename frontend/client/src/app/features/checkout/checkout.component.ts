@@ -166,10 +166,46 @@ export class CheckoutComponent implements OnInit {
   }
 
   async placeOrder() {
-    if (!this.stripe || !this.elements) return;
+    if (!this.stripe || !this.elements || !this.selectedDeliveryMethod) return;
     this.isSubmitting = true;
     this.paymentError = null;
 
+    const cart = this.cartService.cart();
+    if (!cart) {
+      this.isSubmitting = false;
+      return;
+    }
+
+    const orderData = {
+      cartId: cart.id,
+      deliveryMethodId: this.selectedDeliveryMethod.id,
+      shipToAddress: {
+        firstName: this.addressForm.value.firstName,
+        lastName: this.addressForm.value.lastName,
+        street: this.addressForm.value.street,
+        city: this.addressForm.value.city,
+        state: this.addressForm.value.state,
+        postalCode: this.addressForm.value.postalCode
+      }
+    };
+
+    // Step 1: persist the order with Pending status BEFORE charging the card.
+    // If the browser crashes after Stripe succeeds the webhook can still find
+    // this order and fulfil it — closing the money-taken / no-order race.
+    let pendingOrder: OrderReceipt;
+    try {
+      pendingOrder = await firstValueFrom(
+        this.checkoutService.createOrder(orderData)
+      ) as OrderReceipt;
+    } catch {
+      this.paymentError = 'Narudžba nije mogla biti kreirana. Pokušajte ponovo.';
+      this.isSubmitting = false;
+      return;
+    }
+
+    // Step 2: charge the card. The order already exists in the DB, so the
+    // server-side webhook (PaymentIntentSucceeded) can fulfil it regardless
+    // of what happens to this browser session after this point.
     const { error } = await this.stripe.confirmPayment({
       elements: this.elements,
       redirect: 'if_required'
@@ -181,37 +217,11 @@ export class CheckoutComponent implements OnInit {
       return;
     }
 
-    const cart = this.cartService.cart();
-    if (!cart) {
-      this.isSubmitting = false;
-      return;
-    }
-
-    const orderData = {
-      cartId: cart.id,
-      deliveryMethodId: this.selectedDeliveryMethod!.id,
-      shipToAddress: {
-        firstName: this.addressForm.value.firstName,
-        lastName: this.addressForm.value.lastName,
-        street: this.addressForm.value.street,
-        city: this.addressForm.value.city,
-        state: this.addressForm.value.state,
-        postalCode: this.addressForm.value.postalCode
-      }
-    };
-
-    this.checkoutService.createOrder(orderData).subscribe({
-      next: (order: any) => {
-        this.completedOrder = order as OrderReceipt;
-        this.cartService.cart.set(null);
-        this.notificationService.load();
-        this.isSubmitting = false;
-        this.currentStep = 4;
-      },
-      error: (err) => {
-        this.paymentError = 'Plaćanje je uspjelo, ali narudžba nije kreirana. Kontaktirajte podršku.';
-        this.isSubmitting = false;
-      }
-    });
+    // Payment confirmed. Webhook handles status update / stock / notifications.
+    this.cartService.deleteCart();
+    this.completedOrder = pendingOrder;
+    this.notificationService.load();
+    this.isSubmitting = false;
+    this.currentStep = 4;
   }
 }
